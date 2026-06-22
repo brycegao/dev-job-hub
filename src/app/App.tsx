@@ -17,8 +17,17 @@ import {
 } from "../features/applications/types";
 import { analyzeJD } from "../features/jd-analysis/services/jdAnalysisService";
 import type { JDAnalysisResult } from "../features/jd-analysis/types";
+import { matchResumeToJD } from "../features/resume-match/services/resumeMatchService";
+import type { ResumeMatchResult } from "../features/resume-match/types";
+import {
+  createResume,
+  deleteResume,
+  getResumes,
+  updateResume,
+} from "../features/resumes/services/resumeService";
+import type { ResumeVersion, ResumeVersionInput } from "../features/resumes/types";
 
-type Page = "dashboard" | "applications" | "analytics";
+type Page = "dashboard" | "applications" | "resumes" | "analytics";
 
 const defaultInput: JobApplicationInput = {
   companyName: "",
@@ -38,8 +47,17 @@ const defaultInput: JobApplicationInput = {
 const navItems: Array<{ key: Page; label: string }> = [
   { key: "dashboard", label: "概览" },
   { key: "applications", label: "岗位" },
+  { key: "resumes", label: "简历" },
   { key: "analytics", label: "统计" },
 ];
+
+const defaultResumeInput: ResumeVersionInput = {
+  name: "",
+  targetRole: "",
+  content: "",
+  filePath: "",
+  highlights: [],
+};
 
 function formatPercent(value: number): string {
   return `${Math.round(value * 100)}%`;
@@ -48,19 +66,30 @@ function formatPercent(value: number): string {
 export function App() {
   const [page, setPage] = useState<Page>("dashboard");
   const [applications, setApplications] = useState<JobApplication[]>([]);
+  const [resumes, setResumes] = useState<ResumeVersion[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [selectedResumeId, setSelectedResumeId] = useState<string | null>(null);
   const [filterStatus, setFilterStatus] = useState<JobStatus | "all">("all");
   const [input, setInput] = useState<JobApplicationInput>(defaultInput);
+  const [resumeInput, setResumeInput] = useState<ResumeVersionInput>(defaultResumeInput);
   const [isEditing, setIsEditing] = useState(false);
+  const [isEditingResume, setIsEditingResume] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
   async function refresh() {
     setIsLoading(true);
-    const nextApplications = await getApplications();
+    const [nextApplications, nextResumes] = await Promise.all([
+      getApplications(),
+      getResumes(),
+    ]);
     setApplications(nextApplications);
+    setResumes(nextResumes);
     setIsLoading(false);
     if (!selectedId && nextApplications.length > 0) {
       setSelectedId(nextApplications[0].id);
+    }
+    if (!selectedResumeId && nextResumes.length > 0) {
+      setSelectedResumeId(nextResumes[0].id);
     }
   }
 
@@ -71,6 +100,7 @@ export function App() {
   const selectedApplication = applications.find(
     (application) => application.id === selectedId,
   );
+  const selectedResume = resumes.find((resume) => resume.id === selectedResumeId);
 
   const metrics = useMemo(
     () => buildApplicationMetrics(applications),
@@ -135,6 +165,59 @@ export function App() {
 
   async function handleStatusChange(application: JobApplication, status: JobStatus) {
     const updated = await updateApplicationStatus(application, status);
+    setSelectedId(updated.id);
+    await refresh();
+  }
+
+  async function handleResumeSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (!resumeInput.name.trim() || !resumeInput.targetRole.trim()) {
+      return;
+    }
+
+    if (isEditingResume && selectedResume) {
+      const updated = await updateResume({
+        ...selectedResume,
+        ...resumeInput,
+      });
+      setSelectedResumeId(updated.id);
+    } else {
+      const created = await createResume(resumeInput);
+      setSelectedResumeId(created.id);
+    }
+
+    setResumeInput(defaultResumeInput);
+    setIsEditingResume(false);
+    await refresh();
+  }
+
+  function startResumeEdit(resume: ResumeVersion) {
+    setSelectedResumeId(resume.id);
+    setResumeInput({
+      name: resume.name,
+      targetRole: resume.targetRole,
+      content: resume.content,
+      filePath: resume.filePath,
+      highlights: resume.highlights,
+    });
+    setIsEditingResume(true);
+    setPage("resumes");
+  }
+
+  async function handleResumeDelete(resume: ResumeVersion) {
+    await deleteResume(resume.id);
+    setSelectedResumeId(null);
+    await refresh();
+  }
+
+  async function handleApplicationResumeLink(
+    application: JobApplication,
+    resumeVersionId: string,
+  ) {
+    const updated = await updateApplication({
+      ...application,
+      resumeVersionId: resumeVersionId || undefined,
+    });
     setSelectedId(updated.id);
     await refresh();
   }
@@ -278,9 +361,59 @@ export function App() {
               {selectedApplication && (
                 <ApplicationDetail
                   application={selectedApplication}
+                  resumes={resumes}
                   onEdit={startEdit}
                   onDelete={handleDelete}
                   onStatusChange={handleStatusChange}
+                  onResumeLink={handleApplicationResumeLink}
+                />
+              )}
+            </div>
+          </section>
+        )}
+
+        {page === "resumes" && (
+          <section className="workspace">
+            <div className="list-pane">
+              <div className="panel-header">
+                <h2>简历版本</h2>
+              </div>
+              {resumes.length === 0 ? (
+                <p className="empty">还没有简历版本。先添加一个 Android / Flutter / AI 应用方向简历。</p>
+              ) : (
+                <div className="application-list">
+                  {resumes.map((resume) => (
+                    <button
+                      key={resume.id}
+                      className={selectedResumeId === resume.id ? "selected" : ""}
+                      onClick={() => setSelectedResumeId(resume.id)}
+                    >
+                      <span className="status-pill">{resume.targetRole}</span>
+                      <strong>{resume.name}</strong>
+                      <span>{resume.highlights.slice(0, 2).join(" / ") || "暂无核心卖点"}</span>
+                      <small>{resume.updatedAt.slice(0, 10)}</small>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <div className="detail-pane">
+              <ResumeForm
+                input={resumeInput}
+                isEditing={isEditingResume}
+                onInputChange={setResumeInput}
+                onSubmit={handleResumeSubmit}
+                onCancel={() => {
+                  setResumeInput(defaultResumeInput);
+                  setIsEditingResume(false);
+                }}
+              />
+              {selectedResume && (
+                <ResumeDetail
+                  resume={selectedResume}
+                  onEdit={startResumeEdit}
+                  onDelete={handleResumeDelete}
                 />
               )}
             </div>
@@ -491,19 +624,26 @@ function ApplicationForm({
 
 function ApplicationDetail({
   application,
+  resumes,
   onEdit,
   onDelete,
   onStatusChange,
+  onResumeLink,
 }: {
   application: JobApplication;
+  resumes: ResumeVersion[];
   onEdit: (application: JobApplication) => void;
   onDelete: (application: JobApplication) => void;
   onStatusChange: (application: JobApplication, status: JobStatus) => void;
+  onResumeLink: (application: JobApplication, resumeVersionId: string) => void;
 }) {
   const [analysis, setAnalysis] = useState<JDAnalysisResult | null>(null);
+  const [matchResult, setMatchResult] = useState<ResumeMatchResult | null>(null);
+  const linkedResume = resumes.find((resume) => resume.id === application.resumeVersionId);
 
   useEffect(() => {
     setAnalysis(null);
+    setMatchResult(null);
   }, [application.id, application.jdText]);
 
   return (
@@ -545,6 +685,23 @@ function ApplicationDetail({
           ))}
         </select>
       </label>
+      <label>
+        关联简历版本
+        <select
+          value={application.resumeVersionId ?? ""}
+          onChange={(event) => {
+            setMatchResult(null);
+            onResumeLink(application, event.target.value);
+          }}
+        >
+          <option value="">暂不关联</option>
+          {resumes.map((resume) => (
+            <option key={resume.id} value={resume.id}>
+              {resume.name} · {resume.targetRole}
+            </option>
+          ))}
+        </select>
+      </label>
       <div className="detail-section">
         <div className="section-title-row">
           <h3>JD 原文</h3>
@@ -560,11 +717,182 @@ function ApplicationDetail({
         <p>{application.jdText || "暂未填写 JD。"}</p>
       </div>
       {analysis && <JDAnalysisCard analysis={analysis} />}
+      {linkedResume && (
+        <div className="match-actions">
+          <button
+            className="secondary-action"
+            type="button"
+            disabled={!application.jdText.trim()}
+            onClick={() => setMatchResult(matchResumeToJD(application, linkedResume))}
+          >
+            生成简历匹配建议
+          </button>
+          <span>当前关联：{linkedResume.name}</span>
+        </div>
+      )}
+      {matchResult && <ResumeMatchCard result={matchResult} />}
       <div className="detail-section">
         <h3>备注</h3>
         <p>{application.notes || "暂未填写备注。"}</p>
       </div>
     </section>
+  );
+}
+
+function ResumeForm({
+  input,
+  isEditing,
+  onInputChange,
+  onSubmit,
+  onCancel,
+}: {
+  input: ResumeVersionInput;
+  isEditing: boolean;
+  onInputChange: (next: ResumeVersionInput) => void;
+  onSubmit: (event: FormEvent<HTMLFormElement>) => void;
+  onCancel: () => void;
+}) {
+  return (
+    <form className="panel form-panel" onSubmit={onSubmit}>
+      <div className="panel-header">
+        <h2>{isEditing ? "编辑简历版本" : "新增简历版本"}</h2>
+      </div>
+      <div className="form-grid">
+        <label>
+          简历名称
+          <input
+            value={input.name}
+            onChange={(event) => onInputChange({ ...input, name: event.target.value })}
+            placeholder="例如：Flutter 出海方向版"
+            required
+          />
+        </label>
+        <label>
+          目标方向
+          <input
+            value={input.targetRole}
+            onChange={(event) =>
+              onInputChange({ ...input, targetRole: event.target.value })
+            }
+            placeholder="Flutter / Android / AI 应用"
+            required
+          />
+        </label>
+      </div>
+      <label>
+        核心卖点
+        <textarea
+          value={input.highlights.join("\n")}
+          onChange={(event) =>
+            onInputChange({
+              ...input,
+              highlights: event.target.value
+                .split("\n")
+                .map((item) => item.trim())
+                .filter(Boolean),
+            })
+          }
+          placeholder="每行一个卖点，例如：Flutter 出海多语言 / Google Play 合规 / 移动端工程化"
+          rows={4}
+        />
+      </label>
+      <label>
+        简历正文
+        <textarea
+          value={input.content}
+          onChange={(event) => onInputChange({ ...input, content: event.target.value })}
+          placeholder="粘贴简历核心内容，后续用于 JD 匹配"
+          rows={8}
+        />
+      </label>
+      <label>
+        文件路径
+        <input
+          value={input.filePath}
+          onChange={(event) => onInputChange({ ...input, filePath: event.target.value })}
+          placeholder="/Users/.../resume.pdf"
+        />
+      </label>
+      <div className="form-actions">
+        <button className="primary" type="submit">
+          {isEditing ? "保存修改" : "保存简历"}
+        </button>
+        {isEditing && (
+          <button type="button" onClick={onCancel}>
+            取消编辑
+          </button>
+        )}
+      </div>
+    </form>
+  );
+}
+
+function ResumeDetail({
+  resume,
+  onEdit,
+  onDelete,
+}: {
+  resume: ResumeVersion;
+  onEdit: (resume: ResumeVersion) => void;
+  onDelete: (resume: ResumeVersion) => void;
+}) {
+  return (
+    <section className="panel detail-card">
+      <div className="panel-header">
+        <div>
+          <h2>{resume.name}</h2>
+          <p>{resume.targetRole}</p>
+        </div>
+        <div className="inline-actions">
+          <button onClick={() => onEdit(resume)}>编辑</button>
+          <button className="danger" onClick={() => onDelete(resume)}>
+            删除
+          </button>
+        </div>
+      </div>
+      <div className="keyword-group">
+        <span>核心卖点</span>
+        <div className="keyword-list">
+          {resume.highlights.length ? (
+            resume.highlights.map((highlight) => <i key={highlight}>{highlight}</i>)
+          ) : (
+            <p>暂未填写</p>
+          )}
+        </div>
+      </div>
+      <div className="detail-section">
+        <h3>简历正文</h3>
+        <p>{resume.content || "暂未填写正文。"}</p>
+      </div>
+    </section>
+  );
+}
+
+function ResumeMatchCard({ result }: { result: ResumeMatchResult }) {
+  return (
+    <div className="analysis-card">
+      <div className="analysis-summary">
+        <span>简历匹配建议</span>
+        <strong>{result.greetingMessage}</strong>
+      </div>
+      <KeywordGroup title="已匹配" values={result.matchedPoints} />
+      <KeywordGroup title="建议补充" values={result.missingPoints} tone="risk" />
+      <TextList title="建议突出项目" values={result.suggestedProjects} />
+      <TextList title="面试准备方向" values={result.interviewPrep} />
+    </div>
+  );
+}
+
+function TextList({ title, values }: { title: string; values: string[] }) {
+  return (
+    <div className="text-list">
+      <span>{title}</span>
+      <ul>
+        {values.map((value) => (
+          <li key={value}>{value}</li>
+        ))}
+      </ul>
+    </div>
   );
 }
 

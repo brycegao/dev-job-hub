@@ -423,6 +423,37 @@ textarea {
   font-size: 13px;
 }
 
+.match-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.match-actions span {
+  color: #64748b;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.text-list {
+  display: grid;
+  gap: 8px;
+}
+
+.text-list span {
+  color: #64748b;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.text-list ul {
+  margin: 0;
+  padding-left: 20px;
+  color: #475569;
+  line-height: 1.7;
+}
+
 .status-bars {
   display: grid;
   gap: 12px;
@@ -498,7 +529,7 @@ textarea {
   }
 
   .nav {
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(4, 1fr);
   }
 
   .workspace,
