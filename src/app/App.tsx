@@ -15,6 +15,20 @@ import {
   type JobApplicationInput,
   type JobStatus,
 } from "../features/applications/types";
+import {
+  createInterview,
+  deleteInterview,
+  getInterviews,
+} from "../features/interviews/services/interviewService";
+import {
+  interviewResultLabels,
+  interviewRoundLabels,
+  type InterviewQuestion,
+  type InterviewRecord,
+  type InterviewRecordInput,
+  type InterviewResult,
+  type InterviewRound,
+} from "../features/interviews/types";
 import { analyzeJD } from "../features/jd-analysis/services/jdAnalysisService";
 import type { JDAnalysisResult } from "../features/jd-analysis/types";
 import { matchResumeToJD } from "../features/resume-match/services/resumeMatchService";
@@ -27,7 +41,7 @@ import {
 } from "../features/resumes/services/resumeService";
 import type { ResumeVersion, ResumeVersionInput } from "../features/resumes/types";
 
-type Page = "dashboard" | "applications" | "resumes" | "analytics";
+type Page = "dashboard" | "applications" | "resumes" | "interviews" | "analytics";
 
 const defaultInput: JobApplicationInput = {
   companyName: "",
@@ -48,6 +62,7 @@ const navItems: Array<{ key: Page; label: string }> = [
   { key: "dashboard", label: "概览" },
   { key: "applications", label: "岗位" },
   { key: "resumes", label: "简历" },
+  { key: "interviews", label: "面试" },
   { key: "analytics", label: "统计" },
 ];
 
@@ -67,6 +82,7 @@ export function App() {
   const [page, setPage] = useState<Page>("dashboard");
   const [applications, setApplications] = useState<JobApplication[]>([]);
   const [resumes, setResumes] = useState<ResumeVersion[]>([]);
+  const [interviews, setInterviews] = useState<InterviewRecord[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [selectedResumeId, setSelectedResumeId] = useState<string | null>(null);
   const [filterStatus, setFilterStatus] = useState<JobStatus | "all">("all");
@@ -78,12 +94,14 @@ export function App() {
 
   async function refresh() {
     setIsLoading(true);
-    const [nextApplications, nextResumes] = await Promise.all([
+    const [nextApplications, nextResumes, nextInterviews] = await Promise.all([
       getApplications(),
       getResumes(),
+      getInterviews(),
     ]);
     setApplications(nextApplications);
     setResumes(nextResumes);
+    setInterviews(nextInterviews);
     setIsLoading(false);
     if (!selectedId && nextApplications.length > 0) {
       setSelectedId(nextApplications[0].id);
@@ -219,6 +237,16 @@ export function App() {
       resumeVersionId: resumeVersionId || undefined,
     });
     setSelectedId(updated.id);
+    await refresh();
+  }
+
+  async function handleInterviewCreate(input: InterviewRecordInput) {
+    await createInterview(input);
+    await refresh();
+  }
+
+  async function handleInterviewDelete(interview: InterviewRecord) {
+    await deleteInterview(interview.id);
     await refresh();
   }
 
@@ -362,10 +390,15 @@ export function App() {
                 <ApplicationDetail
                   application={selectedApplication}
                   resumes={resumes}
+                  interviews={interviews.filter(
+                    (interview) => interview.jobApplicationId === selectedApplication.id,
+                  )}
                   onEdit={startEdit}
                   onDelete={handleDelete}
                   onStatusChange={handleStatusChange}
                   onResumeLink={handleApplicationResumeLink}
+                  onInterviewCreate={handleInterviewCreate}
+                  onInterviewDelete={handleInterviewDelete}
                 />
               )}
             </div>
@@ -417,6 +450,33 @@ export function App() {
                 />
               )}
             </div>
+          </section>
+        )}
+
+        {page === "interviews" && (
+          <section className="panel">
+            <div className="panel-header">
+              <h2>面试复盘</h2>
+            </div>
+            {interviews.length === 0 ? (
+              <p className="empty">还没有面试记录。进入岗位详情后可以添加一面、二面、HR 面等复盘。</p>
+            ) : (
+              <div className="interview-board">
+                {interviews.map((interview) => {
+                  const application = applications.find(
+                    (item) => item.id === interview.jobApplicationId,
+                  );
+                  return (
+                    <InterviewRecordCard
+                      key={interview.id}
+                      interview={interview}
+                      application={application}
+                      onDelete={handleInterviewDelete}
+                    />
+                  );
+                })}
+              </div>
+            )}
           </section>
         )}
 
@@ -625,17 +685,23 @@ function ApplicationForm({
 function ApplicationDetail({
   application,
   resumes,
+  interviews,
   onEdit,
   onDelete,
   onStatusChange,
   onResumeLink,
+  onInterviewCreate,
+  onInterviewDelete,
 }: {
   application: JobApplication;
   resumes: ResumeVersion[];
+  interviews: InterviewRecord[];
   onEdit: (application: JobApplication) => void;
   onDelete: (application: JobApplication) => void;
   onStatusChange: (application: JobApplication, status: JobStatus) => void;
   onResumeLink: (application: JobApplication, resumeVersionId: string) => void;
+  onInterviewCreate: (input: InterviewRecordInput) => void;
+  onInterviewDelete: (interview: InterviewRecord) => void;
 }) {
   const [analysis, setAnalysis] = useState<JDAnalysisResult | null>(null);
   const [matchResult, setMatchResult] = useState<ResumeMatchResult | null>(null);
@@ -735,7 +801,238 @@ function ApplicationDetail({
         <h3>备注</h3>
         <p>{application.notes || "暂未填写备注。"}</p>
       </div>
+      <InterviewSection
+        application={application}
+        interviews={interviews}
+        onInterviewCreate={onInterviewCreate}
+        onInterviewDelete={onInterviewDelete}
+      />
     </section>
+  );
+}
+
+function InterviewSection({
+  application,
+  interviews,
+  onInterviewCreate,
+  onInterviewDelete,
+}: {
+  application: JobApplication;
+  interviews: InterviewRecord[];
+  onInterviewCreate: (input: InterviewRecordInput) => void;
+  onInterviewDelete: (interview: InterviewRecord) => void;
+}) {
+  const [round, setRound] = useState<InterviewRound>("first");
+  const [scheduledAt, setScheduledAt] = useState("");
+  const [interviewerType, setInterviewerType] = useState("");
+  const [questionsText, setQuestionsText] = useState("");
+  const [tagsText, setTagsText] = useState("项目经历\n架构设计");
+  const [weakPointsText, setWeakPointsText] = useState("");
+  const [selfReview, setSelfReview] = useState("");
+  const [result, setResult] = useState<InterviewResult>("pending");
+  const [summary, setSummary] = useState("");
+
+  function resetForm() {
+    setRound("first");
+    setScheduledAt("");
+    setInterviewerType("");
+    setQuestionsText("");
+    setTagsText("项目经历\n架构设计");
+    setWeakPointsText("");
+    setSelfReview("");
+    setResult("pending");
+    setSummary("");
+  }
+
+  function parseLines(text: string): string[] {
+    return text
+      .split("\n")
+      .map((item) => item.trim())
+      .filter(Boolean);
+  }
+
+  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const questions = parseLines(questionsText).map<InterviewQuestion>((question) => ({
+      id: `${Date.now()}-${question}`,
+      question,
+      tags: parseLines(tagsText),
+    }));
+
+    onInterviewCreate({
+      jobApplicationId: application.id,
+      round,
+      scheduledAt,
+      interviewerType,
+      questions,
+      selfReview,
+      weakPoints: parseLines(weakPointsText),
+      result,
+      summary,
+    });
+    resetForm();
+  }
+
+  return (
+    <section className="interview-section">
+      <div className="section-title-row">
+        <h3>面试记录</h3>
+        <span className="muted-count">{interviews.length} 条</span>
+      </div>
+      <form className="interview-form" onSubmit={handleSubmit}>
+        <div className="form-grid">
+          <label>
+            轮次
+            <select
+              value={round}
+              onChange={(event) => setRound(event.target.value as InterviewRound)}
+            >
+              {Object.entries(interviewRoundLabels).map(([value, label]) => (
+                <option key={value} value={value}>
+                  {label}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label>
+            面试时间
+            <input
+              type="date"
+              value={scheduledAt}
+              onChange={(event) => setScheduledAt(event.target.value)}
+            />
+          </label>
+          <label>
+            面试官类型
+            <input
+              value={interviewerType}
+              onChange={(event) => setInterviewerType(event.target.value)}
+              placeholder="技术负责人 / HR / 业务面"
+            />
+          </label>
+          <label>
+            结果
+            <select
+              value={result}
+              onChange={(event) => setResult(event.target.value as InterviewResult)}
+            >
+              {Object.entries(interviewResultLabels).map(([value, label]) => (
+                <option key={value} value={value}>
+                  {label}
+                </option>
+              ))}
+            </select>
+          </label>
+        </div>
+        <label>
+          面试问题
+          <textarea
+            value={questionsText}
+            onChange={(event) => setQuestionsText(event.target.value)}
+            placeholder="每行一个问题，例如：你如何做 Flutter 多语言？"
+            rows={4}
+          />
+        </label>
+        <label>
+          问题标签
+          <textarea
+            value={tagsText}
+            onChange={(event) => setTagsText(event.target.value)}
+            placeholder="每行一个标签"
+            rows={2}
+          />
+        </label>
+        <label>
+          薄弱点
+          <textarea
+            value={weakPointsText}
+            onChange={(event) => setWeakPointsText(event.target.value)}
+            placeholder="每行一个需要补强的点"
+            rows={2}
+          />
+        </label>
+        <label>
+          自我复盘
+          <textarea
+            value={selfReview}
+            onChange={(event) => setSelfReview(event.target.value)}
+            placeholder="这轮哪里答得好，哪里需要改"
+            rows={3}
+          />
+        </label>
+        <label>
+          总结
+          <input
+            value={summary}
+            onChange={(event) => setSummary(event.target.value)}
+            placeholder="一句话总结这轮面试"
+          />
+        </label>
+        <div className="form-actions">
+          <button className="primary" type="submit">
+            保存面试记录
+          </button>
+        </div>
+      </form>
+      <div className="interview-board">
+        {interviews.map((interview) => (
+          <InterviewRecordCard
+            key={interview.id}
+            interview={interview}
+            application={application}
+            onDelete={onInterviewDelete}
+          />
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function InterviewRecordCard({
+  interview,
+  application,
+  onDelete,
+}: {
+  interview: InterviewRecord;
+  application?: Pick<JobApplication, "companyName" | "jobTitle">;
+  onDelete: (interview: InterviewRecord) => void;
+}) {
+  return (
+    <article className="interview-card">
+      <div className="interview-card-header">
+        <div>
+          <strong>{interviewRoundLabels[interview.round]}</strong>
+          <span>{application ? `${application.companyName} · ${application.jobTitle}` : "未知岗位"}</span>
+        </div>
+        <button className="danger-lite" onClick={() => onDelete(interview)}>
+          删除
+        </button>
+      </div>
+      <div className="detail-grid compact">
+        <span>时间</span>
+        <strong>{interview.scheduledAt || "未填写"}</strong>
+        <span>面试官</span>
+        <strong>{interview.interviewerType || "未填写"}</strong>
+        <span>结果</span>
+        <strong>{interviewResultLabels[interview.result]}</strong>
+      </div>
+      {interview.summary && <p className="interview-summary">{interview.summary}</p>}
+      <TextList
+        title="问题"
+        values={interview.questions.map((question) => question.question)}
+      />
+      <KeywordGroup
+        title="标签"
+        values={Array.from(new Set(interview.questions.flatMap((question) => question.tags)))}
+      />
+      <TextList title="薄弱点" values={interview.weakPoints} />
+      {interview.selfReview && (
+        <div className="detail-section">
+          <h3>自我复盘</h3>
+          <p>{interview.selfReview}</p>
+        </div>
+      )}
+    </article>
   );
 }
 

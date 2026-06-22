@@ -1,7 +1,7 @@
 const DB_NAME = "developer-job-hunt-crm";
-const DB_VERSION = 2;
+const DB_VERSION = 3;
 
-type StoreName = "applications" | "resumes";
+type StoreName = "applications" | "resumes" | "interviews";
 
 let dbPromise: Promise<IDBDatabase> | null = null;
 
@@ -24,6 +24,12 @@ function openDatabase(): Promise<IDBDatabase> {
       if (!db.objectStoreNames.contains("resumes")) {
         const store = db.createObjectStore("resumes", { keyPath: "id" });
         store.createIndex("targetRole", "targetRole", { unique: false });
+        store.createIndex("updatedAt", "updatedAt", { unique: false });
+      }
+      if (!db.objectStoreNames.contains("interviews")) {
+        const store = db.createObjectStore("interviews", { keyPath: "id" });
+        store.createIndex("jobApplicationId", "jobApplicationId", { unique: false });
+        store.createIndex("scheduledAt", "scheduledAt", { unique: false });
         store.createIndex("updatedAt", "updatedAt", { unique: false });
       }
     };
