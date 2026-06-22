@@ -107,6 +107,22 @@ export function HelpPage() {
           <span>调整简历</span>
         </div>
       </section>
+
+      <section className="panel wide">
+        <div className="panel-header">
+          <h2>最近更新</h2>
+        </div>
+        <div className="changelog-list">
+          <ul>
+            <li><strong>全文搜索</strong> — 岗位列表和面试列表新增搜索框，支持按公司名、岗位名、JD 内容等关键词实时过滤。</li>
+            <li><strong>漏斗可视化 + 通知提醒</strong> — 统计页新增投递→回复→面试→Offer 漏斗图；浏览器通知自动提醒近 3 天面试和到期跟进。</li>
+            <li><strong>AI 输出优化</strong> — 简历匹配改为数据驱动行动建议（可直接讲/缺口/差异化）；面试准备包引用真实简历亮点；新增面试前简报。</li>
+            <li><strong>结构化复盘模板</strong> — 面试复盘新增 5 星评分、表现亮点、改进行动项；类型层新增 ratingLabels。</li>
+            <li><strong>日历集成</strong> — 面试时间可导出 .ics 文件到系统日历，支持单条和批量导出。</li>
+            <li><strong>ESLint 代码检查</strong> — 引入 ESLint + TypeScript 规则，提交前自动检查代码质量。</li>
+          </ul>
+        </div>
+      </section>
     </section>
   );
 }

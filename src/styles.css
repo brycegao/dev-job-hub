@@ -784,6 +784,23 @@ textarea {
   font-weight: 900;
 }
 
+.changelog-list {
+  display: grid;
+  gap: 6px;
+}
+
+.changelog-list ul {
+  margin: 0;
+  padding-left: 18px;
+  color: #475569;
+  font-size: 13px;
+  line-height: 1.8;
+}
+
+.changelog-list li strong {
+  color: #0f766e;
+}
+
 .title-with-help {
   position: relative;
   display: inline-flex;
