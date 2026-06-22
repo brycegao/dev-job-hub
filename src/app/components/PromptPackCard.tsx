@@ -7,6 +7,7 @@ export function PromptPackCard({
   message,
   aiEnabled,
   aiStatus,
+  aiLoading,
   aiText,
   onCopy,
   onGenerateAI,
@@ -18,6 +19,7 @@ export function PromptPackCard({
   message: string;
   aiEnabled: boolean;
   aiStatus: string;
+  aiLoading: boolean;
   aiText: string;
   onCopy: () => void;
   onGenerateAI: () => void;
@@ -28,8 +30,13 @@ export function PromptPackCard({
       <div className="prompt-pack-header">
         <span>{title}</span>
         <div className="prompt-actions">
-          <button className="secondary-action" type="button" onClick={onGenerateAI}>
-            {aiEnabled ? "直接生成" : "未配置 AI"}
+          <button
+            className="secondary-action"
+            type="button"
+            disabled={!aiEnabled || aiLoading}
+            onClick={onGenerateAI}
+          >
+            {aiLoading ? "生成中..." : aiEnabled ? "直接生成" : "未配置 AI"}
           </button>
           <button className="secondary-action" type="button" onClick={onCopy}>
             {copyLabel}

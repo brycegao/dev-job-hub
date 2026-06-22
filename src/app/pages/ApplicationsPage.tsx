@@ -4,6 +4,7 @@ import {
   activeStatuses,
   closedStatuses,
   statusLabels,
+  statusPillClass,
   type JobApplication,
   type JobApplicationInput,
   type JobStatus,
@@ -128,7 +129,7 @@ export function ApplicationsPage({
                 className={selectedId === application.id ? "selected" : ""}
                 onClick={() => onSelectApplication(application.id)}
               >
-                <span className="status-pill">{statusLabels[application.status]}</span>
+                <span className={`status-pill ${statusPillClass[application.status]}`}>{statusLabels[application.status]}</span>
                 <strong>{application.companyName}</strong>
                 <span>{application.jobTitle}</span>
                 <small>{application.channel} · {application.appliedAt || "未投递"}</small>

@@ -198,6 +198,7 @@ export function ApplicationDetail({
             onGenerateAI={() => prepAi.handleGenerate(prepPack.prompt, aiConfig)}
             aiEnabled={isAIConfigured(aiConfig)}
             aiStatus={prepAi.aiStatus}
+            aiLoading={prepAi.aiLoading}
             aiText={prepAi.aiResult}
             message={prepAi.copyMessage}
           >
@@ -249,6 +250,7 @@ export function ApplicationDetail({
               onGenerateAI={() => briefAi.handleGenerate(brief.prompt, aiConfig)}
               aiEnabled={isAIConfigured(aiConfig)}
               aiStatus={briefAi.aiStatus}
+              aiLoading={briefAi.aiLoading}
               aiText={briefAi.aiResult}
               message={briefAi.copyMessage}
             >

@@ -1,5 +1,20 @@
 import type { AppDataExport } from "../features/data-portability/types";
 
+/** 生成相对于今天偏移 N 天的日期字符串 (YYYY-MM-DD) */
+function dateOffset(days: number): string {
+  const d = new Date();
+  d.setDate(d.getDate() + days);
+  return d.toISOString().slice(0, 10);
+}
+
+/** 生成相对于今天偏移 N 天的日期时间字符串 (YYYY-MM-DDTHH:mm) */
+function datetimeOffset(days: number, hours = 10, minutes = 0): string {
+  const d = new Date();
+  d.setDate(d.getDate() + days);
+  d.setHours(hours, minutes, 0, 0);
+  return d.toISOString().slice(0, 16);
+}
+
 const now = new Date().toISOString();
 
 export const sampleData: AppDataExport = {
@@ -19,8 +34,8 @@ export const sampleData: AppDataExport = {
       jdText:
         "负责 Flutter 出海 App 开发，要求熟悉 Dart、Android、Google Play 上架、多语言国际化、性能优化、工程化和 CI/CD，有支付、推送、WebSocket 经验优先。",
       status: "interviewing",
-      appliedAt: "2026-06-20",
-      nextFollowUpAt: "2026-06-25",
+      appliedAt: dateOffset(-3),
+      nextFollowUpAt: dateOffset(4),
       resumeVersionId: "sample-resume-1",
       notes: "技术负责人关注 Flutter 工程化和 Google Play 合规经验。",
       createdAt: now,
@@ -38,10 +53,28 @@ export const sampleData: AppDataExport = {
       jdText:
         "负责金融交易 Android App，要求 Kotlin、Java、WebSocket、行情、性能优化、稳定性治理、模块化架构，有金融或交易业务经验优先。",
       status: "interviewing",
-      appliedAt: "2026-06-21",
-      nextFollowUpAt: "2026-06-24",
+      appliedAt: dateOffset(-2),
+      nextFollowUpAt: dateOffset(3),
       resumeVersionId: "sample-resume-2",
       notes: "需要准备金融 App 网络容灾和行情链路案例。",
+      createdAt: now,
+      updatedAt: now,
+    },
+    {
+      id: "sample-app-3",
+      companyName: "云原生 SaaS 平台",
+      jobTitle: "前端开发工程师",
+      channel: "BOSS直聘",
+      city: "杭州",
+      remoteType: "remote",
+      salaryRange: "20-30K",
+      jdText:
+        "负责企业级 SaaS 平台前端开发，要求 React、TypeScript、Ant Design、微前端架构、性能优化，有低代码平台经验优先。",
+      status: "applied",
+      appliedAt: dateOffset(-1),
+      nextFollowUpAt: dateOffset(7),
+      resumeVersionId: "sample-resume-1",
+      notes: "远程岗位，关注 React 和微前端架构经验。",
       createdAt: now,
       updatedAt: now,
     },
@@ -84,12 +117,12 @@ export const sampleData: AppDataExport = {
       jobApplicationId: "sample-app-1",
       round: "first",
       inviteStatus: "confirmed",
-      invitedAt: "2026-06-22",
-      scheduledAt: "2026-06-23",
-      confirmedAt: "2026-06-22",
+      invitedAt: datetimeOffset(-1),
+      scheduledAt: datetimeOffset(1, 14, 0),
+      confirmedAt: datetimeOffset(-1),
       interviewerType: "技术负责人",
       nextRound: "second",
-      nextScheduledAt: "2026-06-26",
+      nextScheduledAt: datetimeOffset(5, 14, 0),
       inviteNotes: "HR 通知一面通过，二面关注 Flutter 工程化和 Google Play 合规细节。",
       questions: [
         {

@@ -3,6 +3,7 @@
  * 管理岗位列表状态、表单状态、筛选和 CRUD 操作。
  */
 import { useState, useMemo, type FormEvent } from "react";
+import { activeStatuses } from "../../features/applications/types";
 import {
   createApplication,
   deleteApplication,
@@ -59,12 +60,19 @@ export function useApplicationData({
     }
   }
 
-  /** 按状态筛选岗位列表 */
+  /** 按状态筛选并排序岗位列表：活跃状态优先，同组内按 updatedAt 降序 */
   const filteredApplications = useMemo(() => {
-    if (filterStatus === "all") {
-      return applications;
-    }
-    return applications.filter((application) => application.status === filterStatus);
+    const filtered = filterStatus === "all"
+      ? applications
+      : applications.filter((application) => application.status === filterStatus);
+
+    const activeSet = new Set(activeStatuses);
+    return [...filtered].sort((a, b) => {
+      const aActive = activeSet.has(a.status) ? 0 : 1;
+      const bActive = activeSet.has(b.status) ? 0 : 1;
+      if (aActive !== bActive) return aActive - bActive;
+      return b.updatedAt.localeCompare(a.updatedAt);
+    });
   }, [applications, filterStatus]);
 
   /** 提交新建或编辑的岗位表单 */

@@ -67,6 +67,16 @@ export const activeStatuses: JobStatus[] = [
 /** 已关闭状态列表 */
 export const closedStatuses: JobStatus[] = ["rejected", "no_response", "not_fit"];
 
+/** 状态对应的视觉样式类名 */
+export const statusPillClass: Record<JobStatus, string> = {
+  applied: "status-pill--applied",
+  interviewing: "status-pill--interviewing",
+  offer: "status-pill--offer",
+  rejected: "status-pill--rejected",
+  no_response: "status-pill--no-response",
+  not_fit: "status-pill--not-fit",
+};
+
 /**
  * 状态流转规则：每个状态允许转到的目标状态。
  */

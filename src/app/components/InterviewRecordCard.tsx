@@ -44,7 +44,7 @@ export function InterviewRecordCard({
   onStartEdit?: (interview: InterviewRecord) => void;
 }) {
   const [answerPack, setAnswerPack] = useState<InterviewAnswerPack | null>(null);
-  const { copyMessage, aiResult, aiStatus, handleCopy, handleGenerate } = useAiGenerate();
+  const { copyMessage, aiResult, aiStatus, aiLoading, handleCopy, handleGenerate } = useAiGenerate();
 
   return (
     <article className="interview-card">
@@ -171,6 +171,7 @@ export function InterviewRecordCard({
             onGenerateAI={() => handleGenerate(answerPack.prompt, aiConfig)}
             aiEnabled={isAIConfigured(aiConfig)}
             aiStatus={aiStatus}
+            aiLoading={aiLoading}
             aiText={aiResult}
             message={copyMessage}
           >

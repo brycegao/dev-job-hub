@@ -119,6 +119,21 @@ button {
   color: #fff;
   padding: 10px 14px;
   font-weight: 700;
+  transition: background 0.15s;
+}
+
+.primary:hover {
+  background: #0d6560;
+}
+
+.primary:focus-visible {
+  outline: 2px solid #14b8a6;
+  outline-offset: 2px;
+}
+
+.primary:disabled {
+  background: #94a3b8;
+  cursor: not-allowed;
 }
 
 .page-grid {
@@ -271,6 +286,36 @@ button {
   font-size: 12px;
 }
 
+.status-pill--applied {
+  background: #e0f2fe;
+  color: #075985;
+}
+
+.status-pill--interviewing {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.status-pill--offer {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.status-pill--rejected {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.status-pill--no-response {
+  background: #f1f5f9;
+  color: #64748b;
+}
+
+.status-pill--not-fit {
+  background: #ede9fe;
+  color: #5b21b6;
+}
+
 .form-panel {
   display: grid;
   gap: 14px;
@@ -321,6 +366,19 @@ textarea {
   color: #111827;
   padding: 9px 12px;
   font-weight: 700;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.form-actions button:hover:not(.primary),
+.inline-actions button:hover:not(.primary):not(.secondary-action):not(.danger-lite):not(.danger) {
+  background: #f8fafc;
+  border-color: #94a3b8;
+}
+
+.form-actions button:focus-visible,
+.inline-actions button:focus-visible {
+  outline: 2px solid #0f766e;
+  outline-offset: 2px;
 }
 
 .form-actions .primary {
@@ -332,6 +390,16 @@ textarea {
 .inline-actions .danger {
   border-color: #fecaca;
   color: #b91c1c;
+}
+
+.inline-actions .danger:hover {
+  background: #fef2f2;
+  border-color: #fca5a5;
+}
+
+.inline-actions .danger:focus-visible {
+  outline: 2px solid #ef4444;
+  outline-offset: 2px;
 }
 
 .detail-card {
@@ -388,6 +456,17 @@ textarea {
   padding: 7px 10px;
   font-size: 13px;
   font-weight: 800;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.secondary-action:hover:not(:disabled) {
+  background: #ccfbf1;
+  border-color: #5eead4;
+}
+
+.secondary-action:focus-visible {
+  outline: 2px solid #14b8a6;
+  outline-offset: 2px;
 }
 
 .secondary-action:disabled {
@@ -530,6 +609,17 @@ textarea {
   padding: 7px 9px;
   font-size: 13px;
   font-weight: 800;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.danger-lite:hover {
+  background: #fef2f2;
+  border-color: #fca5a5;
+}
+
+.danger-lite:focus-visible {
+  outline: 2px solid #ef4444;
+  outline-offset: 2px;
 }
 
 .detail-grid.compact {
@@ -704,6 +794,12 @@ textarea {
   font-size: 13px;
   font-weight: 800;
   cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.file-action:hover {
+  background: #f8fafc;
+  border-color: #94a3b8;
 }
 
 .file-action input {

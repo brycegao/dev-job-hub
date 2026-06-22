@@ -48,5 +48,5 @@ export function useAiGenerate(_key?: string) {
     }
   }
 
-  return { copyMessage, aiResult, aiStatus, reset, handleCopy, handleGenerate };
+  return { copyMessage, aiResult, aiStatus, aiLoading: aiStatus === "AI 生成中...", reset, handleCopy, handleGenerate };
 }
