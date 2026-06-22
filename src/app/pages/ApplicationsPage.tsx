@@ -1,4 +1,4 @@
-import { type FormEvent } from "react";
+import { useMemo, useState, type FormEvent } from "react";
 import type { AIProviderConfig } from "../../features/ai-assist/types";
 import {
   activeStatuses,
@@ -12,6 +12,18 @@ import type { InterviewRecord, InterviewRecordInput } from "../../features/inter
 import type { ResumeVersion } from "../../features/resumes/types";
 import { ApplicationDetail } from "../components/ApplicationDetail";
 import { ApplicationForm } from "../components/ApplicationForm";
+
+function matchesSearch(application: JobApplication, keyword: string): boolean {
+  const lowered = keyword.toLowerCase();
+  return (
+    application.companyName.toLowerCase().includes(lowered) ||
+    application.jobTitle.toLowerCase().includes(lowered) ||
+    (application.channel || "").toLowerCase().includes(lowered) ||
+    (application.city || "").toLowerCase().includes(lowered) ||
+    (application.jdText || "").toLowerCase().includes(lowered) ||
+    (application.notes || "").toLowerCase().includes(lowered)
+  );
+}
 
 export function ApplicationsPage({
   isLoading,
@@ -62,6 +74,13 @@ export function ApplicationsPage({
   onInterviewDelete: (interview: InterviewRecord) => void;
   onInterviewUpdate: (interview: InterviewRecord) => void;
 }) {
+  const [searchText, setSearchText] = useState("");
+
+  const displayedApplications = useMemo(() => {
+    if (!searchText.trim()) return filteredApplications;
+    return filteredApplications.filter((app) => matchesSearch(app, searchText));
+  }, [filteredApplications, searchText]);
+
   const selectedApplication = applications.find(
     (application) => application.id === selectedId,
   );
@@ -73,6 +92,14 @@ export function ApplicationsPage({
       <div className="list-pane">
         <div className="panel-header">
           <h2>岗位列表</h2>
+        </div>
+        <div className="list-filters">
+          <input
+            className="search-input"
+            placeholder="搜索公司 / 岗位 / JD..."
+            value={searchText}
+            onChange={(e) => setSearchText(e.target.value)}
+          />
           <select
             value={filterStatus}
             onChange={(event) =>
@@ -89,11 +116,13 @@ export function ApplicationsPage({
         </div>
         {isLoading ? (
           <p className="empty">加载中...</p>
-        ) : filteredApplications.length === 0 ? (
-          <p className="empty">还没有岗位记录。先新增一个目标岗位。</p>
+        ) : displayedApplications.length === 0 ? (
+          <p className="empty">
+            {searchText ? "没有匹配的结果。" : "还没有岗位记录。先新增一个目标岗位。"}
+          </p>
         ) : (
           <div className="application-list">
-            {filteredApplications.map((application) => (
+            {displayedApplications.map((application) => (
               <button
                 key={application.id}
                 className={selectedId === application.id ? "selected" : ""}

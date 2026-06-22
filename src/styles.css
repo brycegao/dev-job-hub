@@ -192,6 +192,25 @@ button {
   align-items: start;
 }
 
+.list-filters {
+  display: grid;
+  gap: 8px;
+}
+
+.search-input {
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  background: #fff;
+  color: #111827;
+  padding: 9px 11px;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.search-input::placeholder {
+  color: #94a3b8;
+}
+
 .list-pane,
 .detail-pane {
   display: grid;
