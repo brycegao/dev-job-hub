@@ -1,3 +1,7 @@
+/**
+ * 岗位投递数据管理 Hook。
+ * 管理岗位列表状态、表单状态、筛选和 CRUD 操作。
+ */
 import { useState, useMemo, type FormEvent } from "react";
 import {
   createApplication,
@@ -31,6 +35,7 @@ export function useApplicationData({
   const [isEditing, setIsEditing] = useState(false);
   const [formVisible, setFormVisible] = useState(false);
 
+  /** 显示新建岗位表单 */
   function showCreateForm() {
     setInput({ ...defaultInput, appliedAt: new Date().toISOString().slice(0, 10) });
     setIsEditing(false);
@@ -38,11 +43,13 @@ export function useApplicationData({
     setPage("applications");
   }
 
+  /** 隐藏表单并重置编辑状态 */
   function hideForm() {
     setFormVisible(false);
     setIsEditing(false);
   }
 
+  /** 从 refresh 回调中同步岗位列表数据 */
   function setApplicationsFromRefresh(data: JobApplication[]) {
     setApplications(data);
     if (!selectedId && data.length > 0) {
@@ -50,6 +57,7 @@ export function useApplicationData({
     }
   }
 
+  /** 按状态筛选岗位列表 */
   const filteredApplications = useMemo(() => {
     if (filterStatus === "all") {
       return applications;
@@ -57,6 +65,7 @@ export function useApplicationData({
     return applications.filter((application) => application.status === filterStatus);
   }, [applications, filterStatus]);
 
+  /** 提交新建或编辑的岗位表单 */
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!input.companyName.trim() || !input.jobTitle.trim()) {
@@ -81,6 +90,7 @@ export function useApplicationData({
     await refresh();
   }
 
+  /** 进入编辑模式，将岗位数据填充到表单 */
   function startEdit(application: JobApplication) {
     setSelectedId(application.id);
     setInput({
@@ -103,6 +113,7 @@ export function useApplicationData({
     setPage("applications");
   }
 
+  /** 删除岗位及其关联的面试记录 */
   async function handleDelete(application: JobApplication) {
     await deleteInterviewsByApplication(application.id);
     await deleteApplication(application.id);
@@ -110,12 +121,14 @@ export function useApplicationData({
     await refresh();
   }
 
+  /** 快速变更岗位投递状态 */
   async function handleStatusChange(application: JobApplication, status: JobStatus) {
     const updated = await updateApplicationStatus(application, status);
     setSelectedId(updated.id);
     await refresh();
   }
 
+  /** 关联或取消关联简历版本 */
   async function handleApplicationResumeLink(
     application: JobApplication,
     resumeVersionId: string,

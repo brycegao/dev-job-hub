@@ -14,6 +14,7 @@ import {
   type InterviewRound,
 } from "../../features/interviews/types";
 import type { ResumeVersion } from "../../features/resumes/types";
+import { createId } from "../../shared/utils/common";
 import { InterviewRecordCard } from "./InterviewRecordCard";
 
 export function InterviewSection({
@@ -79,7 +80,7 @@ export function InterviewSection({
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const questions = parseLines(questionsText).map<InterviewQuestion>((question) => ({
-      id: `${Date.now()}-${question}`,
+      id: createId(),
       question,
       tags: parseLines(tagsText),
     }));

@@ -1,3 +1,7 @@
+/**
+ * 简历版本数据管理 Hook。
+ * 管理简历列表状态、表单状态和 CRUD 操作。
+ */
 import { useState, type FormEvent } from "react";
 import {
   createResume,
@@ -22,6 +26,7 @@ export function useResumeData({
   const [resumeInput, setResumeInput] = useState<ResumeVersionInput>(defaultResumeInput);
   const [isEditingResume, setIsEditingResume] = useState(false);
 
+  /** 从 refresh 回调中同步简历列表数据 */
   function setResumesFromRefresh(data: ResumeVersion[]) {
     setResumes(data);
     if (!selectedResumeId && data.length > 0) {
@@ -29,6 +34,7 @@ export function useResumeData({
     }
   }
 
+  /** 提交新建或编辑的简历表单 */
   async function handleResumeSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!resumeInput.name.trim() || !resumeInput.targetRole.trim()) {
@@ -53,6 +59,7 @@ export function useResumeData({
     await refresh();
   }
 
+  /** 进入编辑模式，将简历数据填充到表单 */
   function startResumeEdit(resume: ResumeVersion) {
     setSelectedResumeId(resume.id);
     setResumeInput({
@@ -66,6 +73,7 @@ export function useResumeData({
     setPage("resumes");
   }
 
+  /** 删除简历版本 */
   async function handleResumeDelete(resume: ResumeVersion) {
     await deleteResume(resume.id);
     setSelectedResumeId(null);

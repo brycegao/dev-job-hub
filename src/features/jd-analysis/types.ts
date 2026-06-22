@@ -1,3 +1,8 @@
+/**
+ * JD 分析领域类型定义。
+ */
+
+/** 关键词分类 */
 export type KeywordCategory =
   | "tech"
   | "domain"
@@ -5,6 +10,7 @@ export type KeywordCategory =
   | "bonus"
   | "risk";
 
+/** 关键词匹配规则 */
 export type KeywordRule = {
   label: string;
   aliases: string[];
@@ -12,6 +18,7 @@ export type KeywordRule = {
   weight?: number;
 };
 
+/** JD 分析结果 */
 export type JDAnalysisResult = {
   techKeywords: string[];
   domainKeywords: string[];
@@ -20,4 +27,3 @@ export type JDAnalysisResult = {
   risks: string[];
   summary: string;
 };
-

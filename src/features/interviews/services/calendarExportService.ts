@@ -1,30 +1,33 @@
+/**
+ * 面试日程导出服务。
+ * 将面试记录导出为 ICS 日历文件，支持单条和批量导出。
+ */
 import type { JobApplication } from "../../applications/types";
 import {
   interviewRoundLabels,
   type InterviewRecord,
 } from "../types";
 
+/** ICS 构建选项 */
 interface ICSBuildOptions {
   interview: InterviewRecord;
   application?: JobApplication;
   durationMinutes?: number;
 }
 
+/** 将 ISO 日期字符串转换为 ICS 格式（YYYYMMDDTHHMMSS） */
 function formatICSDateTime(value: string): string {
-  // 输入格式："2026-06-22T14:30" 或 "2026-06-22"
-  // 输出格式：YYYYMMDDTHHMMSS（无时区，UTC）
   const cleaned = value.replace(/[-:]/g, "");
-  // 如果只有日期部分（YYYYMMDD），补上 T000000
   if (cleaned.length === 8) {
     return `${cleaned}T000000`;
   }
-  // 如果有 T 但缺秒数（YYYYMMDDTHHMM），补上 00
   if (cleaned.length === 13) {
     return `${cleaned}00`;
   }
   return cleaned.slice(0, 15);
 }
 
+/** 转义 ICS 文本中的特殊字符 */
 function escapeICS(text: string): string {
   return text
     .replace(/\\/g, "\\\\")
@@ -33,6 +36,7 @@ function escapeICS(text: string): string {
     .replace(/\n/g, "\\n");
 }
 
+/** 构建单个 ICS VEVENT 字符串 */
 function buildEventICS(options: ICSBuildOptions): string {
   const { interview, application, durationMinutes = 60 } = options;
 
@@ -74,6 +78,7 @@ function buildEventICS(options: ICSBuildOptions): string {
   ].join("\r\n");
 }
 
+/** 将多个 VEVENT 包装为完整的 ICS 日历字符串 */
 function buildICSWrapper(events: string[]): string {
   const lines = [
     "BEGIN:VCALENDAR",
@@ -87,6 +92,7 @@ function buildICSWrapper(events: string[]): string {
   return lines.join("\r\n");
 }
 
+/** 触发浏览器下载 ICS 文件 */
 function downloadICS(icsText: string, filename: string): void {
   const blob = new Blob([icsText], {
     type: "text/calendar;charset=utf-8",
@@ -99,6 +105,7 @@ function downloadICS(icsText: string, filename: string): void {
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
+/** 导出单条面试记录到日历文件 */
 export function exportInterviewToCalendar(
   interview: InterviewRecord,
   application?: JobApplication,
@@ -114,6 +121,7 @@ export function exportInterviewToCalendar(
   downloadICS(ics, `面试-${round}-${company}-${date}.ics`);
 }
 
+/** 批量导出所有已安排的面试记录到日历文件 */
 export function exportAllInterviewsToCalendar(
   interviews: InterviewRecord[],
   applications: JobApplication[],

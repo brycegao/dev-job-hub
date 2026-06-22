@@ -1,10 +1,22 @@
+/**
+ * IndexedDB 本地存储封装。
+ * 数据库名：developer-job-hunt-crm，当前版本 3。
+ * 提供通用的 open / getAll / put / delete / clear 操作。
+ */
+
 const DB_NAME = "developer-job-hunt-crm";
 const DB_VERSION = 3;
 
+/** 可操作的 ObjectStore 名称 */
 type StoreName = "applications" | "resumes" | "interviews";
 
+/** 缓存数据库连接 Promise，避免重复打开 */
 let dbPromise: Promise<IDBDatabase> | null = null;
 
+/**
+ * 打开 IndexedDB 数据库连接，自动处理升级和索引创建。
+ * 连接会被缓存，后续调用直接返回已有连接。
+ */
 export function openDatabase(): Promise<IDBDatabase> {
   if (dbPromise) {
     return dbPromise;
@@ -44,6 +56,7 @@ export function openDatabase(): Promise<IDBDatabase> {
   return dbPromise;
 }
 
+/** 读取指定 ObjectStore 中的所有记录，按 updatedAt 降序排列 */
 export async function getAllFromStore<T>(storeName: StoreName): Promise<T[]> {
   const db = await openDatabase();
 
@@ -57,6 +70,7 @@ export async function getAllFromStore<T>(storeName: StoreName): Promise<T[]> {
   });
 }
 
+/** 向指定 ObjectStore 写入或更新一条记录 */
 export async function putInStore<T>(storeName: StoreName, value: T): Promise<void> {
   const db = await openDatabase();
 
@@ -70,6 +84,7 @@ export async function putInStore<T>(storeName: StoreName, value: T): Promise<voi
   });
 }
 
+/** 从指定 ObjectStore 中删除一条记录 */
 export async function deleteFromStore(storeName: StoreName, id: string): Promise<void> {
   const db = await openDatabase();
 
@@ -83,6 +98,7 @@ export async function deleteFromStore(storeName: StoreName, id: string): Promise
   });
 }
 
+/** 清空指定 ObjectStore 中的所有记录 */
 export async function clearStore(storeName: StoreName): Promise<void> {
   const db = await openDatabase();
 

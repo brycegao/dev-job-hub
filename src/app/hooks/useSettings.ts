@@ -1,3 +1,7 @@
+/**
+ * 设置页数据管理 Hook。
+ * 管理数据导入导出、示例数据加载和 AI 配置。
+ */
 import { useState } from "react";
 import {
   defaultAIConfig,
@@ -34,16 +38,19 @@ export function useSettings({
   const [settingsMessage, setSettingsMessage] = useState("");
   const [aiConfig, setAIConfig] = useState<AIProviderConfig>(defaultAIConfig);
 
+  /** 从 localStorage 初始化 AI 配置 */
   function initAIConfig() {
     setAIConfig(loadAIConfig());
   }
 
+  /** 导出全部数据为 JSON 文件 */
   function handleExportData() {
     const data = buildExportData({ applications, resumes, interviews });
     downloadJson(data, `developer-job-hunt-crm-${new Date().toISOString().slice(0, 10)}.json`);
     setSettingsMessage("已导出当前本地数据。");
   }
 
+  /** 从 JSON 文件导入数据并替换本地数据 */
   async function handleImportFile(file: File | null) {
     if (!file) {
       return;
@@ -63,6 +70,7 @@ export function useSettings({
     }
   }
 
+  /** 加载示例数据用于演示 */
   async function handleLoadSampleData() {
     await replaceAllData(sampleData);
     await refresh({
@@ -72,6 +80,7 @@ export function useSettings({
     setSettingsMessage("已加载示例数据，可用于演示 JD 分析、简历匹配和面试复盘。");
   }
 
+  /** 保存 AI Provider 配置到 localStorage */
   function handleAIConfigSave(config: AIProviderConfig) {
     saveAIConfig(config);
     setAIConfig(config);

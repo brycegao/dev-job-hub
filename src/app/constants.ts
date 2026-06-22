@@ -1,6 +1,11 @@
+/**
+ * 应用常量和工具函数。
+ * 包含页面路由、默认表单值、格式化工具等。
+ */
 import type { JobApplicationInput } from "../features/applications/types";
 import type { ResumeVersionInput } from "../features/resumes/types";
 
+/** 应用页面类型 */
 export type Page =
   | "dashboard"
   | "applications"
@@ -10,6 +15,7 @@ export type Page =
   | "settings"
   | "help";
 
+/** 侧边栏导航项 */
 export const navItems: Array<{ key: Page; label: string }> = [
   { key: "dashboard", label: "概览" },
   { key: "applications", label: "岗位" },
@@ -20,6 +26,7 @@ export const navItems: Array<{ key: Page; label: string }> = [
   { key: "help", label: "帮助" },
 ];
 
+/** 岗位表单默认值 */
 export const defaultInput: JobApplicationInput = {
   companyName: "",
   jobTitle: "",
@@ -34,6 +41,7 @@ export const defaultInput: JobApplicationInput = {
   notes: "",
 };
 
+/** 简历表单默认值 */
 export const defaultResumeInput: ResumeVersionInput = {
   name: "",
   targetRole: "",
@@ -42,10 +50,12 @@ export const defaultResumeInput: ResumeVersionInput = {
   highlights: [],
 };
 
+/** 将小数转为百分比字符串 */
 export function formatPercent(value: number): string {
   return `${Math.round(value * 100)}%`;
 }
 
+/** 复制文本到剪贴板（非安全上下文静默失败） */
 export async function copyText(text: string): Promise<void> {
   try {
     await navigator.clipboard.writeText(text);
@@ -54,6 +64,7 @@ export async function copyText(text: string): Promise<void> {
   }
 }
 
+/** 弹出删除确认对话框 */
 export function confirmDelete(label: string): boolean {
   return window.confirm(`确定删除该${label}？删除后不可恢复。`);
 }

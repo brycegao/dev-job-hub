@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import { createTimeoutSignal, generateAICompletion } from "../../features/ai-assist/services/aiCompletionService";
 import {
   isAIConfigured,
 } from "../../features/ai-assist/services/aiConfigService";
@@ -26,7 +25,7 @@ import type { JDAnalysisResult } from "../../features/jd-analysis/types";
 import { matchResumeToJD } from "../../features/resume-match/services/resumeMatchService";
 import type { ResumeMatchResult } from "../../features/resume-match/types";
 import type { ResumeVersion } from "../../features/resumes/types";
-import { copyText } from "../constants";
+import { useAiGenerate } from "../hooks/useAiGenerate";
 import { InterviewSection } from "./InterviewSection";
 import { JDAnalysisCard } from "./JDAnalysisCard";
 import { PromptPackCard } from "./PromptPackCard";
@@ -61,44 +60,15 @@ export function ApplicationDetail({
   const [analysis, setAnalysis] = useState<JDAnalysisResult | null>(null);
   const [matchResult, setMatchResult] = useState<ResumeMatchResult | null>(null);
   const [prepPack, setPrepPack] = useState<InterviewPrepPack | null>(null);
-  const [copyMessage, setCopyMessage] = useState("");
-  const [aiPrepResult, setAIPrepResult] = useState("");
-  const [aiPrepStatus, setAIPrepStatus] = useState("");
+  const { copyMessage, aiResult, aiStatus, reset, handleCopy, handleGenerate } = useAiGenerate();
   const linkedResume = resumes.find((resume) => resume.id === application.resumeVersionId);
 
   useEffect(() => {
     setAnalysis(null);
     setMatchResult(null);
     setPrepPack(null);
-    setCopyMessage("");
-    setAIPrepResult("");
-    setAIPrepStatus("");
+    reset();
   }, [application.id, application.jdText]);
-
-  async function handleCopyPrepPrompt(prompt: string) {
-    await copyText(prompt);
-    setCopyMessage("已复制面试准备 Prompt，可粘贴到 ChatGPT / DeepSeek / 豆包。");
-  }
-
-  async function handleGeneratePrepWithAI(prompt: string) {
-    if (!isAIConfigured(aiConfig)) {
-      setAIPrepStatus("请先在设置页配置 AI Provider，或继续使用复制 Prompt。");
-      return;
-    }
-
-    try {
-      setAIPrepStatus("AI 生成中...");
-      const { signal, clear } = createTimeoutSignal();
-      const result = await generateAICompletion({ prompt, config: aiConfig }, signal);
-      clear();
-      setAIPrepResult(result);
-      setAIPrepStatus("AI 生成完成。");
-    } catch (error) {
-      setAIPrepStatus(
-        error instanceof Error ? error.message : "AI 生成失败，请检查配置。",
-      );
-    }
-  }
 
   return (
     <section className="panel detail-card">
@@ -207,11 +177,11 @@ export function ApplicationDetail({
             title="面试准备包"
             prompt={prepPack.prompt}
             copyLabel="复制 Prompt"
-            onCopy={() => handleCopyPrepPrompt(prepPack.prompt)}
-            onGenerateAI={() => handleGeneratePrepWithAI(prepPack.prompt)}
+            onCopy={() => handleCopy(prepPack.prompt, "已复制面试准备 Prompt，可粘贴到 ChatGPT / DeepSeek / 豆包。")}
+            onGenerateAI={() => handleGenerate(prepPack.prompt, aiConfig)}
             aiEnabled={isAIConfigured(aiConfig)}
-            aiStatus={aiPrepStatus}
-            aiText={aiPrepResult}
+            aiStatus={aiStatus}
+            aiText={aiResult}
             message={copyMessage}
           >
             <TextList title="重点准备" values={prepPack.focusAreas} />

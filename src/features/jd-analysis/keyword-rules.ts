@@ -1,5 +1,19 @@
+/**
+ * JD 关键词匹配规则库
+ * 定义用于 JD 文本分析的关键词规则，包括技术栈、业务领域、工程能力、加分项和风险项。
+ * 每条规则包含标准标签、别名列表和分类。
+ */
+
 import type { KeywordRule } from "./types";
 
+/**
+ * 关键词匹配规则列表
+ * - tech: 技术栈关键词
+ * - domain: 业务领域关键词
+ * - capability: 工程能力关键词
+ * - bonus: 加分项关键词
+ * - risk: 潜在风险关键词
+ */
 export const keywordRules: KeywordRule[] = [
   { label: "Flutter", aliases: ["flutter"], category: "tech" },
   { label: "Dart", aliases: ["dart"], category: "tech" },
@@ -44,4 +58,3 @@ export const keywordRules: KeywordRule[] = [
   { label: "高强度交付", aliases: ["抗压", "高强度", "快速迭代", "996"], category: "risk" },
   { label: "全栈泛化要求", aliases: ["全栈", "后端", "服务端", "运维"], category: "risk" },
 ];
-

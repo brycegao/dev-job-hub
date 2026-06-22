@@ -1,4 +1,8 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+/**
+ * 应用根组件。
+ * 管理页面路由、全局数据加载和各子模块的状态协调。
+ */
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { buildApplicationMetrics } from "../features/analytics/services/applicationAnalytics";
 import { getApplications } from "../features/applications/services/applicationService";
 import { getInterviews } from "../features/interviews/services/interviewService";
@@ -22,8 +26,9 @@ export function App() {
   type RefreshFn = (nextSelection?: { applicationId?: string | null; resumeId?: string | null }) => Promise<void>;
   const refreshRef = useRef<RefreshFn>(undefined);
 
+  /** 安全调用 refresh，避免首次 render 前 refreshRef 为空 */
   function callRefresh(...args: Parameters<RefreshFn>): Promise<void> {
-    return refreshRef.current!(...args);
+    return refreshRef.current ? refreshRef.current(...args) : Promise.resolve();
   }
 
   const interviewData = useInterviewData({
@@ -45,6 +50,7 @@ export function App() {
     refresh: callRefresh,
   });
 
+  /** 从 IndexedDB 重新加载所有数据，并可选地设置选中项 */
   async function refresh(nextSelection?: {
     applicationId?: string | null;
     resumeId?: string | null;
@@ -71,6 +77,8 @@ export function App() {
       } else if (!resumeData.selectedResumeId && nextResumes.length > 0) {
         resumeData.setSelectedResumeId(nextResumes[0].id);
       }
+    } catch (error) {
+      console.error("Failed to refresh data:", error);
     } finally {
       setIsLoading(false);
     }
@@ -87,6 +95,23 @@ export function App() {
     () => buildApplicationMetrics(appData.applications, interviewData.interviews),
     [appData.applications, interviewData.interviews],
   );
+
+  const handleFollowUpClick = useCallback((id: string) => {
+    appData.setSelectedId(id);
+    setPage("applications");
+  }, [appData.setSelectedId]);
+
+  const handleSelectApplication = useCallback((id: string | null) => {
+    appData.setSelectedId(id);
+    appData.hideForm();
+  }, [appData.setSelectedId, appData.hideForm]);
+
+  const handleApplicationsCancelEdit = useCallback(() => appData.hideForm(), [appData.hideForm]);
+
+  const handleResumesCancelEdit = useCallback(() => {
+    resumeData.setResumeInput({ name: "", targetRole: "", content: "", filePath: "", highlights: [] });
+    resumeData.setIsEditingResume(false);
+  }, [resumeData.setResumeInput, resumeData.setIsEditingResume]);
 
   return (
     <div className="app-shell">
@@ -128,10 +153,7 @@ export function App() {
         {page === "dashboard" && (
           <DashboardPage
             metrics={metrics}
-            onFollowUpClick={(id) => {
-              appData.setSelectedId(id);
-              setPage("applications");
-            }}
+            onFollowUpClick={handleFollowUpClick}
           />
         )}
 
@@ -149,13 +171,10 @@ export function App() {
             interviews={interviewData.interviews}
             aiConfig={settings.aiConfig}
             onFilterChange={appData.setFilterStatus}
-            onSelectApplication={(id) => {
-              appData.setSelectedId(id);
-              appData.hideForm();
-            }}
+            onSelectApplication={handleSelectApplication}
             onInputChange={appData.setInput}
             onSubmit={appData.handleSubmit}
-            onCancelEdit={() => appData.hideForm()}
+            onCancelEdit={handleApplicationsCancelEdit}
             onEdit={appData.startEdit}
             onDelete={appData.handleDelete}
             onStatusChange={appData.handleStatusChange}
@@ -175,10 +194,7 @@ export function App() {
             onSelectResume={resumeData.setSelectedResumeId}
             onInputChange={resumeData.setResumeInput}
             onSubmit={resumeData.handleResumeSubmit}
-            onCancelEdit={() => {
-              resumeData.setResumeInput({ name: "", targetRole: "", content: "", filePath: "", highlights: [] });
-              resumeData.setIsEditingResume(false);
-            }}
+            onCancelEdit={handleResumesCancelEdit}
             onEdit={resumeData.startResumeEdit}
             onDelete={resumeData.handleResumeDelete}
           />

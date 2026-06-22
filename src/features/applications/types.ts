@@ -1,3 +1,8 @@
+/**
+ * 岗位投递领域类型定义。
+ */
+
+/** 投递状态 */
 export type JobStatus =
   | "applied"
   | "interviewing"
@@ -6,8 +11,10 @@ export type JobStatus =
   | "no_response"
   | "not_fit";
 
+/** 远程工作类型 */
 export type RemoteType = "onsite" | "hybrid" | "remote";
 
+/** 岗位投递记录 */
 export type JobApplication = {
   id: string;
   companyName: string;
@@ -27,11 +34,13 @@ export type JobApplication = {
   updatedAt: string;
 };
 
+/** 创建/更新岗位时的输入类型（不含自动生成字段） */
 export type JobApplicationInput = Omit<
   JobApplication,
   "id" | "createdAt" | "updatedAt"
 >;
 
+/** 状态中文标签映射 */
 export const statusLabels: Record<JobStatus, string> = {
   applied: "已投递",
   interviewing: "面试中",
@@ -41,12 +50,14 @@ export const statusLabels: Record<JobStatus, string> = {
   not_fit: "不合适",
 };
 
+/** 活跃状态列表（未关闭） */
 export const activeStatuses: JobStatus[] = [
   "applied",
   "interviewing",
   "offer",
 ];
 
+/** 已关闭状态列表 */
 export const closedStatuses: JobStatus[] = ["rejected", "no_response", "not_fit"];
 
 /**

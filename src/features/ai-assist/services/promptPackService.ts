@@ -1,13 +1,20 @@
+/**
+ * 面试准备提示词打包服务
+ * 根据职位申请、简历版本和面试记录，构建结构化的面试准备数据包和 AI 提示词。
+ */
+
 import type { JobApplication } from "../../applications/types";
 import type { InterviewRecord } from "../../interviews/types";
 import { analyzeJD } from "../../jd-analysis/services/jdAnalysisService";
 import type { ResumeVersion } from "../../resumes/types";
 import type { InterviewAnswerPack, InterviewPrepPack } from "../types";
 
+/** 数组去重并过滤空值 */
 function unique(values: string[]): string[] {
   return Array.from(new Set(values.map((value) => value.trim()).filter(Boolean)));
 }
 
+/** 截断文本到指定长度，超出部分以省略号结尾 */
 function limitText(text: string | undefined, maxLength: number): string {
   if (!text) {
     return "未填写";
@@ -15,10 +22,18 @@ function limitText(text: string | undefined, maxLength: number): string {
   return text.length > maxLength ? `${text.slice(0, maxLength)}...` : text;
 }
 
+/** 将标题和列表值格式化为 Markdown 无序列表 */
 function lines(title: string, values: string[]): string {
   return [`## ${title}`, ...values.map((value) => `- ${value}`)].join("\n");
 }
 
+/**
+ * 构建面试准备数据包
+ * 分析 JD 关键词，生成面试重点方向、高频问题、项目故事和复习清单。
+ * @param application - 职位申请信息
+ * @param resume - 可选的关联简历版本
+ * @returns 结构化的面试准备数据包，包含 AI 提示词
+ */
 export function buildInterviewPrepPack(
   application: JobApplication,
   resume?: ResumeVersion,
@@ -80,6 +95,12 @@ export function buildInterviewPrepPack(
   };
 }
 
+/**
+ * 构建面试答案优化数据包
+ * 基于已记录的面试问题和复盘，生成答题角度、STAR 模板和追问预测。
+ * @param input - 包含面试记录、职位申请和简历版本的输入
+ * @returns 结构化的答案优化数据包，包含 AI 提示词
+ */
 export function buildInterviewAnswerPack(input: {
   interview: InterviewRecord;
   application?: JobApplication;

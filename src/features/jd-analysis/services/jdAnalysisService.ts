@@ -1,10 +1,18 @@
+/**
+ * JD 分析服务
+ * 基于关键词规则库对 JD 文本进行分析，提取技术栈、业务领域、能力要求等关键信息。
+ * 使用纯本地规则，无需 AI 接口。
+ */
+
 import { keywordRules } from "../keyword-rules";
 import type { JDAnalysisResult, KeywordCategory } from "../types";
 
+/** 将文本统一为小写并压缩空白字符 */
 function normalizeText(text: string): string {
   return text.toLowerCase().replace(/\s+/g, " ");
 }
 
+/** 检查文本中是否包含任一别名（支持词边界匹配） */
 function hasAlias(text: string, aliases: string[]): boolean {
   return aliases.some((alias) => {
     const escaped = alias.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -13,10 +21,12 @@ function hasAlias(text: string, aliases: string[]): boolean {
   });
 }
 
+/** 数组去重 */
 function unique(values: string[]): string[] {
   return Array.from(new Set(values));
 }
 
+/** 按分类从规则库中提取匹配的关键词 */
 function pickByCategory(text: string, category: KeywordCategory): string[] {
   return unique(
     keywordRules
@@ -25,6 +35,7 @@ function pickByCategory(text: string, category: KeywordCategory): string[] {
   );
 }
 
+/** 根据分析结果生成简要的文字摘要 */
 function buildSummary(result: Omit<JDAnalysisResult, "summary">): string {
   const segments: string[] = [];
 
@@ -51,6 +62,11 @@ function buildSummary(result: Omit<JDAnalysisResult, "summary">): string {
   return `${segments.join("；")}。`;
 }
 
+/**
+ * 分析 JD 文本，提取关键词分类和摘要
+ * @param jdText - 原始 JD 文本内容
+ * @returns 包含各分类关键词和文字摘要的分析结果
+ */
 export function analyzeJD(jdText: string): JDAnalysisResult {
   const normalized = normalizeText(jdText);
   const result = {
@@ -66,4 +82,3 @@ export function analyzeJD(jdText: string): JDAnalysisResult {
     summary: buildSummary(result),
   };
 }
-
