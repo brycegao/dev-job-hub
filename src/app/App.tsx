@@ -23,6 +23,7 @@ import { SettingsPage } from "./pages/SettingsPage";
 export function App() {
   const [page, setPage] = useState<Page>("dashboard");
   const [isLoading, setIsLoading] = useState(true);
+  const [errorMessage, setErrorMessage] = useState("");
   type RefreshFn = (nextSelection?: { applicationId?: string | null; resumeId?: string | null }) => Promise<void>;
   const refreshRef = useRef<RefreshFn>(undefined);
 
@@ -33,15 +34,18 @@ export function App() {
 
   const interviewData = useInterviewData({
     refresh: () => callRefresh(),
+    onError: setErrorMessage,
   });
   const appData = useApplicationData({
     refresh: callRefresh,
     setPage,
     deleteInterviewsByApplication: interviewData.deleteInterviewsByApplication,
+    onError: setErrorMessage,
   });
   const resumeData = useResumeData({
     refresh: callRefresh,
     setPage,
+    onError: setErrorMessage,
   });
   const settings = useSettings({
     applications: appData.applications,
@@ -79,6 +83,7 @@ export function App() {
       }
     } catch (error) {
       console.error("Failed to refresh data:", error);
+      setErrorMessage("数据加载失败，请刷新页面重试。");
     } finally {
       setIsLoading(false);
     }
@@ -149,6 +154,12 @@ export function App() {
             新增岗位
           </button>
         </header>
+        {errorMessage && (
+          <div className="error-banner" role="alert">
+            <span>{errorMessage}</span>
+            <button onClick={() => setErrorMessage("")}>×</button>
+          </div>
+        )}
 
         {page === "dashboard" && (
           <DashboardPage

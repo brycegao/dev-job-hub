@@ -5,11 +5,14 @@ import {
 import {
   buildInterviewPrepPack,
 } from "../../features/ai-assist/services/promptPackService";
+import { buildPreInterviewBrief } from "../../features/ai-assist/services/preInterviewBriefService";
 import type {
   AIProviderConfig,
   InterviewPrepPack,
+  PreInterviewBrief,
 } from "../../features/ai-assist/types";
 import {
+  remoteTypeLabels,
   statusLabels,
   statusTransitions,
   type JobApplication,
@@ -60,14 +63,18 @@ export function ApplicationDetail({
   const [analysis, setAnalysis] = useState<JDAnalysisResult | null>(null);
   const [matchResult, setMatchResult] = useState<ResumeMatchResult | null>(null);
   const [prepPack, setPrepPack] = useState<InterviewPrepPack | null>(null);
-  const { copyMessage, aiResult, aiStatus, reset, handleCopy, handleGenerate } = useAiGenerate();
+  const [brief, setBrief] = useState<PreInterviewBrief | null>(null);
+  const prepAi = useAiGenerate();
+  const briefAi = useAiGenerate();
   const linkedResume = resumes.find((resume) => resume.id === application.resumeVersionId);
 
   useEffect(() => {
     setAnalysis(null);
     setMatchResult(null);
     setPrepPack(null);
-    reset();
+    setBrief(null);
+    prepAi.reset();
+    briefAi.reset();
   }, [application.id, application.jdText]);
 
   return (
@@ -95,6 +102,16 @@ export function ApplicationDetail({
         <strong>{application.salaryRange || "未填写"}</strong>
         <span>投递日期</span>
         <strong>{application.appliedAt || "未填写"}</strong>
+        <span>工作方式</span>
+        <strong>{application.remoteType ? remoteTypeLabels[application.remoteType] : "未填写"}</strong>
+        {application.jobUrl && (
+          <>
+            <span>岗位链接</span>
+            <strong>
+              <a href={application.jobUrl} target="_blank" rel="noreferrer">{application.jobUrl}</a>
+            </strong>
+          </>
+        )}
       </div>
       <label>
         快速更新状态
@@ -167,7 +184,7 @@ export function ApplicationDetail({
             type="button"
             className="secondary-action"
             disabled={!application.jdText.trim()}
-            onClick={() => setPrepPack(buildInterviewPrepPack(application, linkedResume))}
+            onClick={() => setPrepPack(buildInterviewPrepPack(application, linkedResume, interviews))}
           >
             生成准备包
           </button>
@@ -177,12 +194,12 @@ export function ApplicationDetail({
             title="面试准备包"
             prompt={prepPack.prompt}
             copyLabel="复制 Prompt"
-            onCopy={() => handleCopy(prepPack.prompt, "已复制面试准备 Prompt，可粘贴到 ChatGPT / DeepSeek / 豆包。")}
-            onGenerateAI={() => handleGenerate(prepPack.prompt, aiConfig)}
+            onCopy={() => prepAi.handleCopy(prepPack.prompt, "已复制面试准备 Prompt，可粘贴到 ChatGPT / DeepSeek / 豆包。")}
+            onGenerateAI={() => prepAi.handleGenerate(prepPack.prompt, aiConfig)}
             aiEnabled={isAIConfigured(aiConfig)}
-            aiStatus={aiStatus}
-            aiText={aiResult}
-            message={copyMessage}
+            aiStatus={prepAi.aiStatus}
+            aiText={prepAi.aiResult}
+            message={prepAi.copyMessage}
           >
             <TextList title="重点准备" values={prepPack.focusAreas} />
             <TextList title="可能被问" values={prepPack.likelyQuestions} />
@@ -191,6 +208,55 @@ export function ApplicationDetail({
           </PromptPackCard>
         ) : (
           <p className="empty">粘贴 JD 后可生成面试准备建议。关联简历后，Prompt 会自动带上简历卖点。</p>
+        )}
+      </div>
+      <div className="ai-panel">
+        <div className="section-title-row">
+          <div>
+            <h3>面试前简报</h3>
+            <p>综合 JD + 简历 + 历史面试数据，一键生成可执行准备方案。</p>
+          </div>
+          <button
+            type="button"
+            className="secondary-action"
+            disabled={!application.jdText.trim()}
+            onClick={() => setBrief(buildPreInterviewBrief({ application, resume: linkedResume, interviews }))}
+          >
+            生成简报
+          </button>
+        </div>
+        {brief ? (
+          <div className="interview-brief">
+            <div className="brief-grid">
+              <div className="brief-item">
+                <span>岗位画像</span>
+                <strong>{brief.profileSummary}</strong>
+              </div>
+              <div className="brief-item">
+                <span>匹配度</span>
+                <strong>{brief.matchOverview}</strong>
+              </div>
+            </div>
+            {brief.weakPointOverlaps.length > 0 && (
+              <TextList title="⚠️ 历史薄弱点 × 本轮 JD 重合" values={brief.weakPointOverlaps} />
+            )}
+            <TextList title="优先复习清单" values={brief.priorityChecklist} />
+            <PromptPackCard
+              title="综合 AI Prompt"
+              prompt={brief.prompt}
+              copyLabel="复制 Prompt"
+              onCopy={() => briefAi.handleCopy(brief.prompt, "已复制面试简报 Prompt。")}
+              onGenerateAI={() => briefAi.handleGenerate(brief.prompt, aiConfig)}
+              aiEnabled={isAIConfigured(aiConfig)}
+              aiStatus={briefAi.aiStatus}
+              aiText={briefAi.aiResult}
+              message={briefAi.copyMessage}
+            >
+              <></>
+            </PromptPackCard>
+          </div>
+        ) : (
+          <p className="empty">粘贴 JD 后可生成面试简报。有历史面试记录和关联简历时，建议更精准。</p>
         )}
       </div>
       <div className="detail-section">

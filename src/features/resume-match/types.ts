@@ -2,18 +2,25 @@
  * 简历匹配领域类型定义。
  */
 
+/** 匹配行动项类型 */
+export type MatchActionType = "strength" | "gap" | "differentiator";
+
+/** 单条匹配行动项 */
+export type MatchAction = {
+  /** 行动类型：strength=可直接讲 gap=缺口需补 differentiator=差异化卖点 */
+  type: MatchActionType;
+  /** 对应的 JD 关键词 */
+  keyword: string;
+  /** 对应的简历亮点（strength/differentiator 时有值） */
+  resumeHighlight?: string;
+  /** 具体可执行的建议 */
+  advice: string;
+};
+
 /** 简历与 JD 的匹配结果 */
 export type ResumeMatchResult = {
-  /** JD 中与简历匹配的关键词 */
-  matchedPoints: string[];
-  /** JD 中简历未覆盖的关键词 */
-  missingPoints: string[];
-  /** 建议补充的项目亮点 */
-  suggestedProjects: string[];
-  /** 建议在简历中补充的关键词 */
-  suggestedKeywords: string[];
+  /** 结构化行动项列表 */
+  actions: MatchAction[];
   /** 自动拼接的打招呼话术 */
   greetingMessage: string;
-  /** 面试准备建议 */
-  interviewPrep: string[];
 };

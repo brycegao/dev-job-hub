@@ -14,6 +14,13 @@ export type JobStatus =
 /** 远程工作类型 */
 export type RemoteType = "onsite" | "hybrid" | "remote";
 
+/** 远程工作类型中文标签 */
+export const remoteTypeLabels: Record<RemoteType, string> = {
+  onsite: "现场",
+  hybrid: "混合",
+  remote: "远程",
+};
+
 /** 岗位投递记录 */
 export type JobApplication = {
   id: string;

@@ -1,9 +1,11 @@
 import { type FormEvent } from "react";
 import {
   activeStatuses,
+  remoteTypeLabels,
   statusLabels,
   type JobApplicationInput,
   type JobStatus,
+  type RemoteType,
 } from "../../features/applications/types";
 
 export function ApplicationForm({
@@ -88,6 +90,21 @@ export function ApplicationForm({
             }
             placeholder="25-35K"
           />
+        </label>
+        <label>
+          工作方式
+          <select
+            value={input.remoteType}
+            onChange={(event) =>
+              onInputChange({ ...input, remoteType: event.target.value as RemoteType })
+            }
+          >
+            {(Object.entries(remoteTypeLabels) as [RemoteType, string][]).map(([value, label]) => (
+              <option key={value} value={value}>
+                {label}
+              </option>
+            ))}
+          </select>
         </label>
         <label>
           投递日期

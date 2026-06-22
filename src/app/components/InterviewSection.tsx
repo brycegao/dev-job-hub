@@ -85,7 +85,11 @@ export function InterviewSection({
       tags: parseLines(tagsText),
     }));
 
-    onInterviewCreate({
+    const parsedWeakPoints = parseLines(weakPointsText);
+    const parsedStrengths = parseLines(strengthsText);
+    const parsedActionItems = parseLines(actionItemsText);
+
+    const base = {
       jobApplicationId: application.id,
       round,
       inviteStatus,
@@ -94,14 +98,30 @@ export function InterviewSection({
       confirmedAt,
       interviewerType,
       inviteNotes,
-      questions,
-      selfReview,
-      weakPoints: parseLines(weakPointsText),
-      strengths: parseLines(strengthsText),
-      actionItems: parseLines(actionItemsText),
-      rating: rating || undefined,
+      questions: questionsText ? questions : [],
       result,
-      summary,
+    };
+
+    // 仅在用户实际填写复盘字段时才提交，避免"空复盘"与"未复盘"无法区分
+    const hasReview = parsedWeakPoints.length || parsedStrengths.length || parsedActionItems.length || rating > 0 || selfReview || summary;
+
+    onInterviewCreate({
+      ...base,
+      ...(hasReview
+        ? {
+            selfReview,
+            weakPoints: parsedWeakPoints,
+            strengths: parsedStrengths,
+            actionItems: parsedActionItems,
+            rating: rating || undefined,
+            summary,
+          }
+        : {
+            selfReview: "",
+            weakPoints: [],
+            strengths: [],
+            actionItems: [],
+          }),
     });
     resetForm();
   }
@@ -147,7 +167,6 @@ export function InterviewSection({
             <input
               type="datetime-local"
               value={invitedAt}
-              onInput={(event) => setInvitedAt(event.currentTarget.value)}
               onChange={(event) => setInvitedAt(event.target.value)}
             />
           </label>
@@ -156,7 +175,6 @@ export function InterviewSection({
             <input
               type="datetime-local"
               value={scheduledAt}
-              onInput={(event) => setScheduledAt(event.currentTarget.value)}
               onChange={(event) => setScheduledAt(event.target.value)}
             />
           </label>
@@ -165,7 +183,6 @@ export function InterviewSection({
             <input
               type="datetime-local"
               value={confirmedAt}
-              onInput={(event) => setConfirmedAt(event.currentTarget.value)}
               onChange={(event) => setConfirmedAt(event.target.value)}
             />
           </label>

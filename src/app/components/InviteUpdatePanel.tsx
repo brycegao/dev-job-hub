@@ -73,18 +73,16 @@ export function InviteUpdatePanel({
         <label>
           本轮面试时间
           <input
-            type="date"
+            type="datetime-local"
             value={scheduledAt}
-            onInput={(event) => setScheduledAt(event.currentTarget.value)}
             onChange={(event) => setScheduledAt(event.target.value)}
           />
         </label>
         <label>
           确认时间
           <input
-            type="date"
+            type="datetime-local"
             value={confirmedAt}
-            onInput={(event) => setConfirmedAt(event.currentTarget.value)}
             onChange={(event) => setConfirmedAt(event.target.value)}
           />
         </label>
@@ -104,9 +102,8 @@ export function InviteUpdatePanel({
         <label>
           下一轮时间
           <input
-            type="date"
+            type="datetime-local"
             value={nextScheduledAt}
-            onInput={(event) => setNextScheduledAt(event.currentTarget.value)}
             onChange={(event) => setNextScheduledAt(event.target.value)}
           />
         </label>

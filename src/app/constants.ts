@@ -55,12 +55,13 @@ export function formatPercent(value: number): string {
   return `${Math.round(value * 100)}%`;
 }
 
-/** 复制文本到剪贴板（非安全上下文静默失败） */
-export async function copyText(text: string): Promise<void> {
+/** 复制文本到剪贴板，返回是否成功 */
+export async function copyText(text: string): Promise<boolean> {
   try {
     await navigator.clipboard.writeText(text);
+    return true;
   } catch {
-    // fallback for non-secure contexts
+    return false;
   }
 }
 

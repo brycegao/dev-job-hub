@@ -14,12 +14,14 @@ import { defaultResumeInput, type Page } from "../constants";
 export function useResumeData({
   refresh,
   setPage,
+  onError,
 }: {
   refresh: (nextSelection?: {
     applicationId?: string | null;
     resumeId?: string | null;
   }) => Promise<void>;
   setPage: (page: Page) => void;
+  onError: (message: string) => void;
 }) {
   const [resumes, setResumes] = useState<ResumeVersion[]>([]);
   const [selectedResumeId, setSelectedResumeId] = useState<string | null>(null);
@@ -41,22 +43,26 @@ export function useResumeData({
       return;
     }
 
-    const selectedResume = resumes.find((r) => r.id === selectedResumeId);
+    try {
+      const selectedResume = resumes.find((r) => r.id === selectedResumeId);
 
-    if (isEditingResume && selectedResume) {
-      const updated = await updateResume({
-        ...selectedResume,
-        ...resumeInput,
-      });
-      setSelectedResumeId(updated.id);
-    } else {
-      const created = await createResume(resumeInput);
-      setSelectedResumeId(created.id);
+      if (isEditingResume && selectedResume) {
+        const updated = await updateResume({
+          ...selectedResume,
+          ...resumeInput,
+        });
+        setSelectedResumeId(updated.id);
+      } else {
+        const created = await createResume(resumeInput);
+        setSelectedResumeId(created.id);
+      }
+
+      setResumeInput(defaultResumeInput);
+      setIsEditingResume(false);
+      await refresh();
+    } catch {
+      onError("保存简历失败，请重试。");
     }
-
-    setResumeInput(defaultResumeInput);
-    setIsEditingResume(false);
-    await refresh();
   }
 
   /** 进入编辑模式，将简历数据填充到表单 */
@@ -75,9 +81,13 @@ export function useResumeData({
 
   /** 删除简历版本 */
   async function handleResumeDelete(resume: ResumeVersion) {
-    await deleteResume(resume.id);
-    setSelectedResumeId(null);
-    await refresh();
+    try {
+      await deleteResume(resume.id);
+      setSelectedResumeId(null);
+      await refresh();
+    } catch {
+      onError("删除简历失败，请重试。");
+    }
   }
 
   return {

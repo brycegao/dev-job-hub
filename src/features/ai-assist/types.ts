@@ -19,6 +19,20 @@ export type InterviewAnswerPack = {
   prompt: string;
 };
 
+/** 面试前简报 */
+export type PreInterviewBrief = {
+  /** 岗位画像摘要 */
+  profileSummary: string;
+  /** 匹配度概览 */
+  matchOverview: string;
+  /** 历史薄弱点与本轮 JD 重合项 */
+  weakPointOverlaps: string[];
+  /** 按优先级排序的复习清单 */
+  priorityChecklist: string[];
+  /** 给外部 AI 的综合 prompt */
+  prompt: string;
+};
+
 /** AI Provider 类型 */
 export type AIProviderType = "none" | "openai-compatible" | "ollama";
 

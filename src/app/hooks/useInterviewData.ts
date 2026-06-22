@@ -13,8 +13,10 @@ import type { InterviewRecord, InterviewRecordInput } from "../../features/inter
 
 export function useInterviewData({
   refresh,
+  onError,
 }: {
   refresh: () => Promise<void>;
+  onError: (message: string) => void;
 }) {
   const [interviews, setInterviews] = useState<InterviewRecord[]>([]);
 
@@ -32,20 +34,32 @@ export function useInterviewData({
 
   /** 创建一条新的面试记录 */
   async function handleInterviewCreate(input: InterviewRecordInput) {
-    await createInterview(input);
-    await refresh();
+    try {
+      await createInterview(input);
+      await refresh();
+    } catch {
+      onError("保存面试记录失败，请重试。");
+    }
   }
 
   /** 删除一条面试记录 */
   async function handleInterviewDelete(interview: InterviewRecord) {
-    await deleteInterview(interview.id);
-    await refresh();
+    try {
+      await deleteInterview(interview.id);
+      await refresh();
+    } catch {
+      onError("删除面试记录失败，请重试。");
+    }
   }
 
   /** 更新一条面试记录 */
   async function handleInterviewUpdate(interview: InterviewRecord) {
-    await updateInterview(interview);
-    await refresh();
+    try {
+      await updateInterview(interview);
+      await refresh();
+    } catch {
+      onError("更新面试记录失败，请重试。");
+    }
   }
 
   return {

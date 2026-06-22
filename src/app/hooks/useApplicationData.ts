@@ -20,6 +20,7 @@ export function useApplicationData({
   refresh,
   setPage,
   deleteInterviewsByApplication,
+  onError,
 }: {
   refresh: (nextSelection?: {
     applicationId?: string | null;
@@ -27,6 +28,7 @@ export function useApplicationData({
   }) => Promise<void>;
   setPage: (page: Page) => void;
   deleteInterviewsByApplication: (applicationId: string) => Promise<void>;
+  onError: (message: string) => void;
 }) {
   const [applications, setApplications] = useState<JobApplication[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -72,22 +74,26 @@ export function useApplicationData({
       return;
     }
 
-    const selectedApplication = applications.find((a) => a.id === selectedId);
+    try {
+      const selectedApplication = applications.find((a) => a.id === selectedId);
 
-    if (isEditing && selectedApplication) {
-      const updated = await updateApplication({
-        ...selectedApplication,
-        ...input,
-      });
-      setSelectedId(updated.id);
-    } else {
-      const created = await createApplication(input);
-      setSelectedId(created.id);
+      if (isEditing && selectedApplication) {
+        const updated = await updateApplication({
+          ...selectedApplication,
+          ...input,
+        });
+        setSelectedId(updated.id);
+      } else {
+        const created = await createApplication(input);
+        setSelectedId(created.id);
+      }
+
+      setInput(defaultInput);
+      hideForm();
+      await refresh();
+    } catch {
+      onError("保存岗位失败，请重试。");
     }
-
-    setInput(defaultInput);
-    hideForm();
-    await refresh();
   }
 
   /** 进入编辑模式，将岗位数据填充到表单 */
@@ -115,17 +121,25 @@ export function useApplicationData({
 
   /** 删除岗位及其关联的面试记录 */
   async function handleDelete(application: JobApplication) {
-    await deleteInterviewsByApplication(application.id);
-    await deleteApplication(application.id);
-    setSelectedId(null);
-    await refresh();
+    try {
+      await deleteInterviewsByApplication(application.id);
+      await deleteApplication(application.id);
+      setSelectedId(null);
+      await refresh();
+    } catch {
+      onError("删除岗位失败，请重试。");
+    }
   }
 
   /** 快速变更岗位投递状态 */
   async function handleStatusChange(application: JobApplication, status: JobStatus) {
-    const updated = await updateApplicationStatus(application, status);
-    setSelectedId(updated.id);
-    await refresh();
+    try {
+      const updated = await updateApplicationStatus(application, status);
+      setSelectedId(updated.id);
+      await refresh();
+    } catch {
+      onError("更新状态失败，请重试。");
+    }
   }
 
   /** 关联或取消关联简历版本 */
@@ -133,12 +147,16 @@ export function useApplicationData({
     application: JobApplication,
     resumeVersionId: string,
   ) {
-    const updated = await updateApplication({
-      ...application,
-      resumeVersionId: resumeVersionId || undefined,
-    });
-    setSelectedId(updated.id);
-    await refresh();
+    try {
+      const updated = await updateApplication({
+        ...application,
+        resumeVersionId: resumeVersionId || undefined,
+      });
+      setSelectedId(updated.id);
+      await refresh();
+    } catch {
+      onError("关联简历失败，请重试。");
+    }
   }
 
   return {
