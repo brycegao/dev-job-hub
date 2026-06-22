@@ -531,6 +531,47 @@ textarea {
   line-height: 1.7;
 }
 
+.settings-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.file-action {
+  position: relative;
+  display: inline-flex;
+  width: auto;
+  min-height: 39px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  background: #fff;
+  color: #111827;
+  padding: 9px 12px;
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.file-action input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.settings-message {
+  margin: 12px 0 0;
+  border: 1px solid #ccfbf1;
+  border-radius: 8px;
+  background: #f0fdfa;
+  color: #115e59;
+  padding: 10px 12px;
+  font-weight: 700;
+}
+
 .status-bars {
   display: grid;
   gap: 12px;
@@ -606,7 +647,7 @@ textarea {
   }
 
   .nav {
-    grid-template-columns: repeat(5, 1fr);
+    grid-template-columns: repeat(6, 1fr);
   }
 
   .workspace,
@@ -618,5 +659,15 @@ textarea {
 
   .wide {
     grid-column: span 1;
+  }
+
+  .settings-actions {
+    align-items: stretch;
+  }
+
+  .settings-actions .primary,
+  .settings-actions .secondary-action,
+  .file-action {
+    flex: 1 1 120px;
   }
 }

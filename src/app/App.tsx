@@ -15,6 +15,13 @@ import {
   type JobApplicationInput,
   type JobStatus,
 } from "../features/applications/types";
+import { sampleData } from "../data/sampleData";
+import {
+  buildExportData,
+  downloadJson,
+  parseImportData,
+  replaceAllData,
+} from "../features/data-portability/services/dataPortabilityService";
 import {
   createInterview,
   deleteInterview,
@@ -41,7 +48,13 @@ import {
 } from "../features/resumes/services/resumeService";
 import type { ResumeVersion, ResumeVersionInput } from "../features/resumes/types";
 
-type Page = "dashboard" | "applications" | "resumes" | "interviews" | "analytics";
+type Page =
+  | "dashboard"
+  | "applications"
+  | "resumes"
+  | "interviews"
+  | "analytics"
+  | "settings";
 
 const defaultInput: JobApplicationInput = {
   companyName: "",
@@ -64,6 +77,7 @@ const navItems: Array<{ key: Page; label: string }> = [
   { key: "resumes", label: "简历" },
   { key: "interviews", label: "面试" },
   { key: "analytics", label: "统计" },
+  { key: "settings", label: "设置" },
 ];
 
 const defaultResumeInput: ResumeVersionInput = {
@@ -91,8 +105,12 @@ export function App() {
   const [isEditing, setIsEditing] = useState(false);
   const [isEditingResume, setIsEditingResume] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [settingsMessage, setSettingsMessage] = useState("");
 
-  async function refresh() {
+  async function refresh(nextSelection?: {
+    applicationId?: string | null;
+    resumeId?: string | null;
+  }) {
     setIsLoading(true);
     const [nextApplications, nextResumes, nextInterviews] = await Promise.all([
       getApplications(),
@@ -103,10 +121,16 @@ export function App() {
     setResumes(nextResumes);
     setInterviews(nextInterviews);
     setIsLoading(false);
-    if (!selectedId && nextApplications.length > 0) {
+
+    if (nextSelection?.applicationId !== undefined) {
+      setSelectedId(nextSelection.applicationId);
+    } else if (!selectedId && nextApplications.length > 0) {
       setSelectedId(nextApplications[0].id);
     }
-    if (!selectedResumeId && nextResumes.length > 0) {
+
+    if (nextSelection?.resumeId !== undefined) {
+      setSelectedResumeId(nextSelection.resumeId);
+    } else if (!selectedResumeId && nextResumes.length > 0) {
       setSelectedResumeId(nextResumes[0].id);
     }
   }
@@ -248,6 +272,40 @@ export function App() {
   async function handleInterviewDelete(interview: InterviewRecord) {
     await deleteInterview(interview.id);
     await refresh();
+  }
+
+  function handleExportData() {
+    const data = buildExportData({ applications, resumes, interviews });
+    downloadJson(data, `developer-job-hunt-crm-${new Date().toISOString().slice(0, 10)}.json`);
+    setSettingsMessage("已导出当前本地数据。");
+  }
+
+  async function handleImportFile(file: File | null) {
+    if (!file) {
+      return;
+    }
+
+    try {
+      const text = await file.text();
+      const data = parseImportData(text);
+      await replaceAllData(data);
+      await refresh({
+        applicationId: data.applications[0]?.id ?? null,
+        resumeId: data.resumes[0]?.id ?? null,
+      });
+      setSettingsMessage("导入完成，已替换当前本地数据。");
+    } catch (error) {
+      setSettingsMessage(error instanceof Error ? error.message : "导入失败，请检查文件格式。");
+    }
+  }
+
+  async function handleLoadSampleData() {
+    await replaceAllData(sampleData);
+    await refresh({
+      applicationId: "sample-app-1",
+      resumeId: "sample-resume-1",
+    });
+    setSettingsMessage("已加载示例数据，可用于演示 JD 分析、简历匹配和面试复盘。");
   }
 
   return (
@@ -501,8 +559,88 @@ export function App() {
             </section>
           </section>
         )}
+
+        {page === "settings" && (
+          <SettingsPage
+            applicationsCount={applications.length}
+            resumesCount={resumes.length}
+            interviewsCount={interviews.length}
+            message={settingsMessage}
+            onExport={handleExportData}
+            onImport={handleImportFile}
+            onLoadSample={handleLoadSampleData}
+          />
+        )}
       </main>
     </div>
+  );
+}
+
+function SettingsPage({
+  applicationsCount,
+  resumesCount,
+  interviewsCount,
+  message,
+  onExport,
+  onImport,
+  onLoadSample,
+}: {
+  applicationsCount: number;
+  resumesCount: number;
+  interviewsCount: number;
+  message: string;
+  onExport: () => void;
+  onImport: (file: File | null) => void;
+  onLoadSample: () => void;
+}) {
+  return (
+    <section className="page-grid">
+      <MetricCard label="岗位记录" value={applicationsCount} />
+      <MetricCard label="简历版本" value={resumesCount} />
+      <MetricCard label="面试记录" value={interviewsCount} />
+
+      <section className="panel wide">
+        <div className="panel-header">
+          <div>
+            <h2>数据导入导出</h2>
+            <p>所有数据默认保存在本机浏览器 IndexedDB，可导出 JSON 备份。</p>
+          </div>
+        </div>
+        <div className="settings-actions">
+          <button className="primary" onClick={onExport}>
+            导出 JSON
+          </button>
+          <label className="file-action">
+            导入 JSON
+            <input
+              type="file"
+              accept="application/json"
+              onChange={(event) => {
+                void onImport(event.target.files?.[0] ?? null);
+                event.target.value = "";
+              }}
+            />
+          </label>
+          <button className="secondary-action" type="button" onClick={onLoadSample}>
+            加载示例数据
+          </button>
+        </div>
+        {message && <p className="settings-message">{message}</p>}
+      </section>
+
+      <section className="panel">
+        <div className="panel-header">
+          <h2>本地数据说明</h2>
+        </div>
+        <div className="text-list">
+          <ul>
+            <li>导入 JSON 会替换当前本地数据。</li>
+            <li>示例数据可用于演示 JD 分析、简历匹配和面试复盘。</li>
+            <li>卸载浏览器或清理站点数据可能导致本地记录丢失。</li>
+          </ul>
+        </div>
+      </section>
+    </section>
   );
 }
 

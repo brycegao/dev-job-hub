@@ -79,3 +79,16 @@ export async function deleteFromStore(storeName: StoreName, id: string): Promise
     request.onerror = () => reject(request.error);
   });
 }
+
+export async function clearStore(storeName: StoreName): Promise<void> {
+  const db = await openDatabase();
+
+  return new Promise((resolve, reject) => {
+    const transaction = db.transaction(storeName, "readwrite");
+    const store = transaction.objectStore(storeName);
+    const request = store.clear();
+
+    request.onsuccess = () => resolve();
+    request.onerror = () => reject(request.error);
+  });
+}
