@@ -1,7 +1,6 @@
 import { type FormEvent } from "react";
 import {
   activeStatuses,
-  closedStatuses,
   statusLabels,
   type JobApplicationInput,
   type JobStatus,

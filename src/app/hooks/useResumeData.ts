@@ -2,7 +2,6 @@ import { useState, type FormEvent } from "react";
 import {
   createResume,
   deleteResume,
-  getResumes,
   updateResume,
 } from "../../features/resumes/services/resumeService";
 import type { ResumeVersion, ResumeVersionInput } from "../../features/resumes/types";

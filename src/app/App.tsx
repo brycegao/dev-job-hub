@@ -3,7 +3,7 @@ import { buildApplicationMetrics } from "../features/analytics/services/applicat
 import { getApplications } from "../features/applications/services/applicationService";
 import { getInterviews } from "../features/interviews/services/interviewService";
 import { getResumes } from "../features/resumes/services/resumeService";
-import { defaultInput, navItems, type Page } from "./constants";
+import { navItems, type Page } from "./constants";
 import { useApplicationData } from "./hooks/useApplicationData";
 import { useInterviewData } from "./hooks/useInterviewData";
 import { useResumeData } from "./hooks/useResumeData";

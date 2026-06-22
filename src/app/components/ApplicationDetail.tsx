@@ -18,7 +18,6 @@ import {
 } from "../../features/applications/types";
 import { confirmDelete } from "../constants";
 import {
-  interviewResultLabels,
   type InterviewRecord,
   type InterviewRecordInput,
 } from "../../features/interviews/types";
@@ -28,7 +27,6 @@ import { matchResumeToJD } from "../../features/resume-match/services/resumeMatc
 import type { ResumeMatchResult } from "../../features/resume-match/types";
 import type { ResumeVersion } from "../../features/resumes/types";
 import { copyText } from "../constants";
-import { ApplicationForm } from "./ApplicationForm";
 import { InterviewSection } from "./InterviewSection";
 import { JDAnalysisCard } from "./JDAnalysisCard";
 import { PromptPackCard } from "./PromptPackCard";

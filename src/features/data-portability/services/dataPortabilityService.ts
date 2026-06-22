@@ -1,4 +1,3 @@
-import { clearStore, putInStore } from "../../../shared/storage/indexedDb";
 import { openDatabase } from "../../../shared/storage/indexedDb";
 import type { JobApplication } from "../../applications/types";
 import type { InterviewRecord } from "../../interviews/types";

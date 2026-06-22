@@ -5,7 +5,6 @@ import {
   getInterviews,
   updateInterview,
 } from "../../features/interviews/services/interviewService";
-import { deleteFromStore } from "../../shared/storage/indexedDb";
 import type { InterviewRecord, InterviewRecordInput } from "../../features/interviews/types";
 
 export function useInterviewData({
