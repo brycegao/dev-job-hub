@@ -15,12 +15,14 @@ import { defaultInput, type Page } from "../constants";
 export function useApplicationData({
   refresh,
   setPage,
+  deleteInterviewsByApplication,
 }: {
   refresh: (nextSelection?: {
     applicationId?: string | null;
     resumeId?: string | null;
   }) => Promise<void>;
   setPage: (page: Page) => void;
+  deleteInterviewsByApplication: (applicationId: string) => Promise<void>;
 }) {
   const [applications, setApplications] = useState<JobApplication[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -30,7 +32,7 @@ export function useApplicationData({
   const [formVisible, setFormVisible] = useState(false);
 
   function showCreateForm() {
-    setInput(defaultInput);
+    setInput({ ...defaultInput, appliedAt: new Date().toISOString().slice(0, 10) });
     setIsEditing(false);
     setFormVisible(true);
     setPage("applications");
@@ -102,6 +104,7 @@ export function useApplicationData({
   }
 
   async function handleDelete(application: JobApplication) {
+    await deleteInterviewsByApplication(application.id);
     await deleteApplication(application.id);
     setSelectedId(null);
     await refresh();

@@ -5,7 +5,7 @@ type StoreName = "applications" | "resumes" | "interviews";
 
 let dbPromise: Promise<IDBDatabase> | null = null;
 
-function openDatabase(): Promise<IDBDatabase> {
+export function openDatabase(): Promise<IDBDatabase> {
   if (dbPromise) {
     return dbPromise;
   }
@@ -35,7 +35,10 @@ function openDatabase(): Promise<IDBDatabase> {
     };
 
     request.onsuccess = () => resolve(request.result);
-    request.onerror = () => reject(request.error);
+    request.onerror = () => {
+      dbPromise = null;
+      reject(request.error);
+    };
   });
 
   return dbPromise;

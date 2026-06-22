@@ -65,7 +65,7 @@ export function ApplicationForm({
               onInputChange({ ...input, status: event.target.value as JobStatus })
             }
           >
-            {[...activeStatuses, ...closedStatuses].map((status) => (
+            {activeStatuses.map((status) => (
               <option key={status} value={status}>
                 {statusLabels[status]}
               </option>

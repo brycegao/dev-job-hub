@@ -6,7 +6,11 @@ function normalizeText(text: string): string {
 }
 
 function hasAlias(text: string, aliases: string[]): boolean {
-  return aliases.some((alias) => text.includes(alias.toLowerCase()));
+  return aliases.some((alias) => {
+    const escaped = alias.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    const regex = new RegExp(`(?:^|[\\s,;，；、（）()\\-])${escaped}(?:$|[\\s,;，；、（）()\\-])`, "i");
+    return regex.test(text);
+  });
 }
 
 function unique(values: string[]): string[] {

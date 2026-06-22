@@ -1,4 +1,5 @@
 import type { ResumeVersion } from "../../features/resumes/types";
+import { confirmDelete } from "../constants";
 
 export function ResumeDetail({
   resume,
@@ -18,7 +19,9 @@ export function ResumeDetail({
         </div>
         <div className="inline-actions">
           <button onClick={() => onEdit(resume)}>编辑</button>
-          <button className="danger" onClick={() => onDelete(resume)}>
+          <button className="danger" onClick={() => {
+            if (confirmDelete("简历版本")) onDelete(resume);
+          }}>
             删除
           </button>
         </div>

@@ -2,8 +2,10 @@ import { useState } from "react";
 import {
   createInterview,
   deleteInterview,
+  getInterviews,
   updateInterview,
 } from "../../features/interviews/services/interviewService";
+import { deleteFromStore } from "../../shared/storage/indexedDb";
 import type { InterviewRecord, InterviewRecordInput } from "../../features/interviews/types";
 
 export function useInterviewData({
@@ -15,6 +17,12 @@ export function useInterviewData({
 
   function setInterviewsFromRefresh(data: InterviewRecord[]) {
     setInterviews(data);
+  }
+
+  async function deleteInterviewsByApplication(applicationId: string) {
+    const records = await getInterviews();
+    const toDelete = records.filter((r) => r.jobApplicationId === applicationId);
+    await Promise.all(toDelete.map((r) => deleteInterview(r.id)));
   }
 
   async function handleInterviewCreate(input: InterviewRecordInput) {
@@ -35,6 +43,7 @@ export function useInterviewData({
   return {
     interviews,
     setInterviewsFromRefresh,
+    deleteInterviewsByApplication,
     handleInterviewCreate,
     handleInterviewDelete,
     handleInterviewUpdate,

@@ -4,13 +4,7 @@ import {
   saveApplication,
 } from "../repositories/applicationRepository";
 import type { JobApplication, JobApplicationInput, JobStatus } from "../types";
-
-function createId(): string {
-  if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
-    return crypto.randomUUID();
-  }
-  return `${Date.now()}-${Math.random().toString(16).slice(2)}`;
-}
+import { createId } from "../../../shared/utils/common";
 
 export async function getApplications(): Promise<JobApplication[]> {
   return listApplications();

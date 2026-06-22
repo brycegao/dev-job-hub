@@ -15,6 +15,7 @@ import { ApplicationForm } from "../components/ApplicationForm";
 
 export function ApplicationsPage({
   isLoading,
+  applications,
   filteredApplications,
   selectedId,
   filterStatus,
@@ -38,6 +39,7 @@ export function ApplicationsPage({
   onInterviewUpdate,
 }: {
   isLoading: boolean;
+  applications: JobApplication[];
   filteredApplications: JobApplication[];
   selectedId: string | null;
   filterStatus: JobStatus | "all";
@@ -60,7 +62,7 @@ export function ApplicationsPage({
   onInterviewDelete: (interview: InterviewRecord) => void;
   onInterviewUpdate: (interview: InterviewRecord) => void;
 }) {
-  const selectedApplication = filteredApplications.find(
+  const selectedApplication = applications.find(
     (application) => application.id === selectedId,
   );
 

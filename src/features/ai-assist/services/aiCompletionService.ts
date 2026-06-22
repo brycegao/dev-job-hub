@@ -1,5 +1,7 @@
 import type { AICompletionInput } from "../types";
 
+const TIMEOUT_MS = 60_000;
+
 function trimTrailingSlash(value: string): string {
   return value.replace(/\/+$/, "");
 }
@@ -11,23 +13,24 @@ function resolveOpenAIUrl(baseUrl: string): string {
     : `${normalized}/v1/chat/completions`;
 }
 
-export async function generateAICompletion({
-  prompt,
-  config,
-}: AICompletionInput): Promise<string> {
-  if (config.provider === "openai-compatible") {
-    const response = await fetch(resolveOpenAIUrl(config.baseUrl), {
+export async function generateAICompletion(
+  input: AICompletionInput,
+  signal?: AbortSignal,
+): Promise<string> {
+  if (input.config.provider === "openai-compatible") {
+    const response = await fetch(resolveOpenAIUrl(input.config.baseUrl), {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${config.apiKey}`,
+        Authorization: `Bearer ${input.config.apiKey}`,
       },
+      signal,
       body: JSON.stringify({
-        model: config.model,
+        model: input.config.model,
         messages: [
           {
             role: "user",
-            content: prompt,
+            content: input.prompt,
           },
         ],
         temperature: 0.4,
@@ -44,15 +47,16 @@ export async function generateAICompletion({
     return data.choices?.[0]?.message?.content?.trim() || "AI 未返回有效内容。";
   }
 
-  if (config.provider === "ollama") {
-    const response = await fetch(`${trimTrailingSlash(config.baseUrl)}/api/generate`, {
+  if (input.config.provider === "ollama") {
+    const response = await fetch(`${trimTrailingSlash(input.config.baseUrl)}/api/generate`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
+      signal,
       body: JSON.stringify({
-        model: config.model,
-        prompt,
+        model: input.config.model,
+        prompt: input.prompt,
         stream: false,
       }),
     });
@@ -66,4 +70,16 @@ export async function generateAICompletion({
   }
 
   throw new Error("请先在设置页配置 AI Provider。");
+}
+
+export function createTimeoutSignal(timeoutMs: number = TIMEOUT_MS): {
+  signal: AbortSignal;
+  clear: () => void;
+} {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  return {
+    signal: controller.signal,
+    clear: () => clearTimeout(timer),
+  };
 }

@@ -60,8 +60,8 @@ function buildGreeting(
 ): string {
   const matchedText = matchedPoints.length
     ? `我过往经历和 ${matchedPoints.slice(0, 4).join("、")} 比较匹配`
-    : `我有 ${resume.targetRole || "移动端开发"} 相关经验`;
+    : `我有 ${resume.targetRole || application.jobTitle} 相关经验`;
 
-  return `您好，我关注到贵司「${application.jobTitle}」岗位，${matchedText}。我近期也在系统沉淀移动端工程化、AI Coding 和 App 上线交付实践，希望有机会进一步沟通。`;
+  return `您好，我关注到贵司「${application.jobTitle}」岗位，${matchedText}。希望有机会进一步沟通。`;
 }
 

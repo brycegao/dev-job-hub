@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { generateAICompletion } from "../../features/ai-assist/services/aiCompletionService";
+import { createTimeoutSignal, generateAICompletion } from "../../features/ai-assist/services/aiCompletionService";
 import {
   isAIConfigured,
 } from "../../features/ai-assist/services/aiConfigService";
@@ -20,7 +20,7 @@ import {
   type InterviewRound,
 } from "../../features/interviews/types";
 import type { ResumeVersion } from "../../features/resumes/types";
-import { copyText } from "../constants";
+import { confirmDelete, copyText } from "../constants";
 import { KeywordGroup } from "./KeywordGroup";
 import { PromptPackCard } from "./PromptPackCard";
 import { TextList } from "./TextList";
@@ -62,14 +62,7 @@ export function InterviewRecordCard({
     setNextRound(interview.nextRound ?? "second");
     setNextScheduledAt(interview.nextScheduledAt ?? "");
     setInviteNotes(interview.inviteNotes ?? "");
-  }, [
-    interview.inviteStatus,
-    interview.scheduledAt,
-    interview.confirmedAt,
-    interview.nextRound,
-    interview.nextScheduledAt,
-    interview.inviteNotes,
-  ]);
+  }, [interview.id]);
 
   async function handleCopyAnswerPrompt(prompt: string) {
     await copyText(prompt);
@@ -84,7 +77,9 @@ export function InterviewRecordCard({
 
     try {
       setAIAnswerStatus("AI 生成中...");
-      const result = await generateAICompletion({ prompt, config: aiConfig });
+      const { signal, clear } = createTimeoutSignal();
+      const result = await generateAICompletion({ prompt, config: aiConfig }, signal);
+      clear();
       setAIAnswerResult(result);
       setAIAnswerStatus("AI 生成完成。");
     } catch (error) {
@@ -113,7 +108,9 @@ export function InterviewRecordCard({
           <strong>{interviewRoundLabels[interview.round]}</strong>
           <span>{application ? `${application.companyName} · ${application.jobTitle}` : "未知岗位"}</span>
         </div>
-        <button className="danger-lite" onClick={() => onDelete(interview)}>
+        <button className="danger-lite" onClick={() => {
+          if (confirmDelete("面试记录")) onDelete(interview);
+        }}>
           删除
         </button>
       </div>

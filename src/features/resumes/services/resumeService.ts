@@ -1,16 +1,10 @@
+import { createId } from "../../../shared/utils/common";
 import {
   listResumes,
   removeResume,
   saveResume,
 } from "../repositories/resumeRepository";
 import type { ResumeVersion, ResumeVersionInput } from "../types";
-
-function createId(): string {
-  if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
-    return crypto.randomUUID();
-  }
-  return `${Date.now()}-${Math.random().toString(16).slice(2)}`;
-}
 
 export async function getResumes(): Promise<ResumeVersion[]> {
   return listResumes();

@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { generateAICompletion } from "../../features/ai-assist/services/aiCompletionService";
+import { createTimeoutSignal, generateAICompletion } from "../../features/ai-assist/services/aiCompletionService";
 import {
   isAIConfigured,
 } from "../../features/ai-assist/services/aiConfigService";
@@ -16,6 +16,7 @@ import {
   type JobApplication,
   type JobStatus,
 } from "../../features/applications/types";
+import { confirmDelete } from "../constants";
 import {
   interviewResultLabels,
   type InterviewRecord,
@@ -89,7 +90,9 @@ export function ApplicationDetail({
 
     try {
       setAIPrepStatus("AI 生成中...");
-      const result = await generateAICompletion({ prompt, config: aiConfig });
+      const { signal, clear } = createTimeoutSignal();
+      const result = await generateAICompletion({ prompt, config: aiConfig }, signal);
+      clear();
       setAIPrepResult(result);
       setAIPrepStatus("AI 生成完成。");
     } catch (error) {
@@ -108,7 +111,9 @@ export function ApplicationDetail({
         </div>
         <div className="inline-actions">
           <button onClick={() => onEdit(application)}>编辑</button>
-          <button className="danger" onClick={() => onDelete(application)}>
+          <button className="danger" onClick={() => {
+            if (confirmDelete("岗位")) onDelete(application);
+          }}>
             删除
           </button>
         </div>

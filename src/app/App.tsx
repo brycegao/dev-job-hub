@@ -26,16 +26,17 @@ export function App() {
     return refreshRef.current!(...args);
   }
 
+  const interviewData = useInterviewData({
+    refresh: () => callRefresh(),
+  });
   const appData = useApplicationData({
     refresh: callRefresh,
     setPage,
+    deleteInterviewsByApplication: interviewData.deleteInterviewsByApplication,
   });
   const resumeData = useResumeData({
     refresh: callRefresh,
     setPage,
-  });
-  const interviewData = useInterviewData({
-    refresh: () => callRefresh(),
   });
   const settings = useSettings({
     applications: appData.applications,
@@ -49,26 +50,29 @@ export function App() {
     resumeId?: string | null;
   }) {
     setIsLoading(true);
-    const [nextApplications, nextResumes, nextInterviews] = await Promise.all([
-      getApplications(),
-      getResumes(),
-      getInterviews(),
-    ]);
-    appData.setApplicationsFromRefresh(nextApplications);
-    resumeData.setResumesFromRefresh(nextResumes);
-    interviewData.setInterviewsFromRefresh(nextInterviews);
-    setIsLoading(false);
+    try {
+      const [nextApplications, nextResumes, nextInterviews] = await Promise.all([
+        getApplications(),
+        getResumes(),
+        getInterviews(),
+      ]);
+      appData.setApplicationsFromRefresh(nextApplications);
+      resumeData.setResumesFromRefresh(nextResumes);
+      interviewData.setInterviewsFromRefresh(nextInterviews);
 
-    if (nextSelection?.applicationId !== undefined) {
-      appData.setSelectedId(nextSelection.applicationId);
-    } else if (!appData.selectedId && nextApplications.length > 0) {
-      appData.setSelectedId(nextApplications[0].id);
-    }
+      if (nextSelection?.applicationId !== undefined) {
+        appData.setSelectedId(nextSelection.applicationId);
+      } else if (!appData.selectedId && nextApplications.length > 0) {
+        appData.setSelectedId(nextApplications[0].id);
+      }
 
-    if (nextSelection?.resumeId !== undefined) {
-      resumeData.setSelectedResumeId(nextSelection.resumeId);
-    } else if (!resumeData.selectedResumeId && nextResumes.length > 0) {
-      resumeData.setSelectedResumeId(nextResumes[0].id);
+      if (nextSelection?.resumeId !== undefined) {
+        resumeData.setSelectedResumeId(nextSelection.resumeId);
+      } else if (!resumeData.selectedResumeId && nextResumes.length > 0) {
+        resumeData.setSelectedResumeId(nextResumes[0].id);
+      }
+    } finally {
+      setIsLoading(false);
     }
   }
 
@@ -134,6 +138,7 @@ export function App() {
         {page === "applications" && (
           <ApplicationsPage
             isLoading={isLoading}
+            applications={appData.applications}
             filteredApplications={appData.filteredApplications}
             selectedId={appData.selectedId}
             filterStatus={appData.filterStatus}

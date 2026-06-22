@@ -1,8 +1,16 @@
 import { clearStore, putInStore } from "../../../shared/storage/indexedDb";
+import { openDatabase } from "../../../shared/storage/indexedDb";
 import type { JobApplication } from "../../applications/types";
 import type { InterviewRecord } from "../../interviews/types";
 import type { ResumeVersion } from "../../resumes/types";
 import type { AppDataExport } from "../types";
+
+function isValidRecord(record: unknown, requiredFields: string[]): boolean {
+  if (!record || typeof record !== "object") return false;
+  return requiredFields.every(
+    (field) => (record as Record<string, unknown>)[field] !== undefined,
+  );
+}
 
 export function buildExportData(input: {
   applications: JobApplication[];
@@ -28,7 +36,7 @@ export function downloadJson(data: AppDataExport, filename: string): void {
   anchor.href = url;
   anchor.download = filename;
   anchor.click();
-  URL.revokeObjectURL(url);
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
 export function parseImportData(text: string): AppDataExport {
@@ -44,28 +52,52 @@ export function parseImportData(text: string): AppDataExport {
     throw new Error("导入文件缺少必要的数据列表");
   }
 
+  const validApplications = (data.applications as unknown[]).filter((r) =>
+    isValidRecord(r, ["id", "companyName", "jobTitle", "status"]),
+  ) as JobApplication[];
+  const validResumes = (data.resumes as unknown[]).filter((r) =>
+    isValidRecord(r, ["id", "name", "targetRole"]),
+  ) as ResumeVersion[];
+  const validInterviews = (data.interviews as unknown[]).filter((r) =>
+    isValidRecord(r, ["id", "jobApplicationId"]),
+  ) as InterviewRecord[];
+
   return {
     app: "developer-job-hunt-crm",
     version: 1,
     exportedAt: data.exportedAt ?? new Date().toISOString(),
-    applications: data.applications,
-    resumes: data.resumes,
-    interviews: data.interviews,
+    applications: validApplications,
+    resumes: validResumes,
+    interviews: validInterviews,
   };
 }
 
 export async function replaceAllData(data: AppDataExport): Promise<void> {
-  await Promise.all([
-    clearStore("applications"),
-    clearStore("resumes"),
-    clearStore("interviews"),
-  ]);
+  const db = await openDatabase();
+  const transaction = db.transaction(
+    ["applications", "resumes", "interviews"],
+    "readwrite",
+  );
+  const appStore = transaction.objectStore("applications");
+  const resumeStore = transaction.objectStore("resumes");
+  const interviewStore = transaction.objectStore("interviews");
 
-  await Promise.all([
-    ...data.applications.map((application) =>
-      putInStore("applications", application),
-    ),
-    ...data.resumes.map((resume) => putInStore("resumes", resume)),
-    ...data.interviews.map((interview) => putInStore("interviews", interview)),
-  ]);
+  appStore.clear();
+  resumeStore.clear();
+  interviewStore.clear();
+
+  for (const application of data.applications) {
+    appStore.put(application);
+  }
+  for (const resume of data.resumes) {
+    resumeStore.put(resume);
+  }
+  for (const interview of data.interviews) {
+    interviewStore.put(interview);
+  }
+
+  return new Promise<void>((resolve, reject) => {
+    transaction.oncomplete = () => resolve();
+    transaction.onerror = () => reject(transaction.error);
+  });
 }

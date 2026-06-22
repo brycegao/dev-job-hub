@@ -1,14 +1,11 @@
-import { formatPercent } from "../constants";
+import type { ApplicationMetrics } from "../../features/analytics/services/applicationAnalytics";
 import { MetricCard } from "../components/MetricCard";
+import { formatPercent } from "../constants";
 
 export function AnalyticsPage({
   metrics,
 }: {
-  metrics: {
-    replyRate: number;
-    interviewRate: number;
-    channelCounts: Record<string, number>;
-  };
+  metrics: ApplicationMetrics;
 }) {
   return (
     <section className="page-grid">

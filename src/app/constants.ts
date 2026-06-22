@@ -30,8 +30,7 @@ export const defaultInput: JobApplicationInput = {
   jobUrl: "",
   jdText: "",
   status: "applied",
-  appliedAt: new Date().toISOString().slice(0, 10),
-  nextFollowUpAt: "",
+  appliedAt: "",
   notes: "",
 };
 
@@ -48,5 +47,13 @@ export function formatPercent(value: number): string {
 }
 
 export async function copyText(text: string): Promise<void> {
-  await navigator.clipboard.writeText(text);
+  try {
+    await navigator.clipboard.writeText(text);
+  } catch {
+    // fallback for non-secure contexts
+  }
+}
+
+export function confirmDelete(label: string): boolean {
+  return window.confirm(`确定删除该${label}？删除后不可恢复。`);
 }

@@ -1,16 +1,10 @@
+import { createId } from "../../../shared/utils/common";
 import {
   listInterviews,
   removeInterview,
   saveInterview,
 } from "../repositories/interviewRepository";
 import type { InterviewRecord, InterviewRecordInput } from "../types";
-
-function createId(): string {
-  if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
-    return crypto.randomUUID();
-  }
-  return `${Date.now()}-${Math.random().toString(16).slice(2)}`;
-}
 
 export async function getInterviews(): Promise<InterviewRecord[]> {
   return listInterviews();
