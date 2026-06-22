@@ -50,11 +50,6 @@ export const defaultResumeInput: ResumeVersionInput = {
   highlights: [],
 };
 
-/** 将小数转为百分比字符串 */
-export function formatPercent(value: number): string {
-  return `${Math.round(value * 100)}%`;
-}
-
 /** 复制文本到剪贴板，返回是否成功 */
 export async function copyText(text: string): Promise<boolean> {
   try {

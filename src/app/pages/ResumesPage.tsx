@@ -8,23 +8,27 @@ export function ResumesPage({
   selectedResumeId,
   resumeInput,
   isEditingResume,
+  formVisible,
   onSelectResume,
   onInputChange,
   onSubmit,
   onCancelEdit,
   onEdit,
   onDelete,
+  onShowCreateForm,
 }: {
   resumes: ResumeVersion[];
   selectedResumeId: string | null;
   resumeInput: ResumeVersionInput;
   isEditingResume: boolean;
+  formVisible: boolean;
   onSelectResume: (id: string | null) => void;
   onInputChange: (input: ResumeVersionInput) => void;
   onSubmit: (event: FormEvent<HTMLFormElement>) => void;
   onCancelEdit: () => void;
   onEdit: (resume: ResumeVersion) => void;
   onDelete: (resume: ResumeVersion) => void;
+  onShowCreateForm: () => void;
 }) {
   const selectedResume = resumes.find((resume) => resume.id === selectedResumeId);
 
@@ -33,9 +37,12 @@ export function ResumesPage({
       <div className="list-pane">
         <div className="panel-header">
           <h2>简历版本</h2>
+          <button className="secondary-action" type="button" onClick={onShowCreateForm}>
+            新增简历
+          </button>
         </div>
         {resumes.length === 0 ? (
-          <p className="empty">还没有简历版本。先添加一个 Android / Flutter / AI 应用方向简历。</p>
+          <p className="empty">还没有简历版本。点击「新增简历」添加一个。</p>
         ) : (
           <div className="application-list">
             {resumes.map((resume) => (
@@ -55,19 +62,22 @@ export function ResumesPage({
       </div>
 
       <div className="detail-pane">
-        <ResumeForm
-          input={resumeInput}
-          isEditing={isEditingResume}
-          onInputChange={onInputChange}
-          onSubmit={onSubmit}
-          onCancel={onCancelEdit}
-        />
-        {selectedResume && (
+        {formVisible ? (
+          <ResumeForm
+            input={resumeInput}
+            isEditing={isEditingResume}
+            onInputChange={onInputChange}
+            onSubmit={onSubmit}
+            onCancel={onCancelEdit}
+          />
+        ) : selectedResume ? (
           <ResumeDetail
             resume={selectedResume}
             onEdit={onEdit}
             onDelete={onDelete}
           />
+        ) : (
+          <p className="empty">选择左侧简历查看详情，或点击「新增简历」创建。</p>
         )}
       </div>
     </section>

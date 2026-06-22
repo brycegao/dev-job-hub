@@ -6,6 +6,7 @@
 
 import { keywordRules } from "../keyword-rules";
 import type { JDAnalysisResult, KeywordCategory } from "../types";
+import { unique } from "../../../shared/utils/common";
 
 /** 将文本统一为小写并压缩空白字符 */
 function normalizeText(text: string): string {
@@ -19,11 +20,6 @@ function hasAlias(text: string, aliases: string[]): boolean {
     const regex = new RegExp(`(?:^|[\\s,;，；、（）()\\-])${escaped}(?:$|[\\s,;，；、（）()\\-])`, "i");
     return regex.test(text);
   });
-}
-
-/** 数组去重 */
-function unique(values: string[]): string[] {
-  return Array.from(new Set(values));
 }
 
 /** 按分类从规则库中提取匹配的关键词 */

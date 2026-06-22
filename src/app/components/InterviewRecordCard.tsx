@@ -18,6 +18,7 @@ import {
   type InterviewRecord,
 } from "../../features/interviews/types";
 import type { ResumeVersion } from "../../features/resumes/types";
+import { formatDate } from "../../shared/utils/common";
 import { confirmDelete } from "../constants";
 import { useAiGenerate } from "../hooks/useAiGenerate";
 import { InviteUpdatePanel } from "./InviteUpdatePanel";
@@ -34,6 +35,7 @@ export function InterviewRecordCard({
   onDelete,
   onUpdate,
   onStartEdit,
+  onApplicationStatusAutoUpdate,
 }: {
   interview: InterviewRecord;
   application?: JobApplication;
@@ -42,8 +44,10 @@ export function InterviewRecordCard({
   onDelete: (interview: InterviewRecord) => void;
   onUpdate: (interview: InterviewRecord) => void;
   onStartEdit?: (interview: InterviewRecord) => void;
+  onApplicationStatusAutoUpdate?: () => void;
 }) {
   const [answerPack, setAnswerPack] = useState<InterviewAnswerPack | null>(null);
+  const [exportMsg, setExportMsg] = useState("");
   const { copyMessage, aiResult, aiStatus, aiLoading, handleCopy, handleGenerate } = useAiGenerate();
 
   return (
@@ -57,9 +61,13 @@ export function InterviewRecordCard({
           {interview.scheduledAt && (
             <button
               className="secondary-action"
-              onClick={() => exportInterviewToCalendar(interview, application)}
+              onClick={() => {
+                exportInterviewToCalendar(interview, application);
+                setExportMsg("已导出日程文件");
+                setTimeout(() => setExportMsg(""), 2000);
+              }}
             >
-              导出日程
+              {exportMsg || "导出日程"}
             </button>
           )}
           {onStartEdit && (
@@ -79,7 +87,7 @@ export function InterviewRecordCard({
       </div>
       <div className="detail-grid compact">
         <span>时间</span>
-        <strong>{interview.scheduledAt || "未填写"}</strong>
+        <strong>{formatDate(interview.scheduledAt)}</strong>
         <span>邀约</span>
         <strong>{interviewInviteStatusLabels[interview.inviteStatus ?? "not_scheduled"]}</strong>
         <span>面试官</span>
@@ -93,7 +101,7 @@ export function InterviewRecordCard({
             : "未安排"}
         </strong>
       </div>
-      <InviteUpdatePanel interview={interview} onUpdate={onUpdate} />
+      <InviteUpdatePanel interview={interview} onUpdate={onUpdate} onApplicationStatusAutoUpdate={onApplicationStatusAutoUpdate} />
       {interview.summary && <p className="interview-summary">{interview.summary}</p>}
       <div className="review-template">
         <div className="review-grid">

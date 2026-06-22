@@ -84,7 +84,7 @@ describe("matchResumeToJD", () => {
     expect(gapKeywords).toContain("性能优化");
   });
 
-  it("produces differentiator action when JD bonus keyword matches resume", () => {
+  it("bonus keyword matched in resume appears as strength, not duplicated as differentiator", () => {
     const application = makeApplication({
       jdText:
         "有 Google Play 上架经验、国际化 i18n 经验者优先。",
@@ -96,13 +96,15 @@ describe("matchResumeToJD", () => {
 
     const result = matchResumeToJD(application, resume);
 
-    const diffActions = result.actions.filter((a) => a.type === "differentiator");
-    const diffKeywords = diffActions.map((a) => a.keyword);
-    expect(diffKeywords).toContain("Google Play");
-    expect(diffKeywords).toContain("国际化");
+    // bonus keywords that match resume are included in allJDKeywords → appear as strength
+    const strengthActions = result.actions.filter((a) => a.type === "strength");
+    const strengthKeywords = strengthActions.map((a) => a.keyword);
+    expect(strengthKeywords).toContain("Google Play");
+    expect(strengthKeywords).toContain("国际化");
 
-    const i18nAction = diffActions.find((a) => a.keyword === "国际化");
-    expect(i18nAction!.resumeHighlight).toBe("主导过应用的国际化多语言适配");
+    // differentiator does NOT duplicate already-matched bonus keywords
+    const diffActions = result.actions.filter((a) => a.type === "differentiator");
+    expect(diffActions).toEqual([]);
   });
 
   it("greetingMessage contains matched keywords when there are matches", () => {
@@ -138,7 +140,7 @@ describe("matchResumeToJD", () => {
     expect(result.greetingMessage).toContain("Rust Engineer");
   });
 
-  it("total actions reflect matched strengths, gaps, and bonus differentiators", () => {
+  it("total actions reflect matched strengths and gaps (differentiators only for unmatched bonus)", () => {
     const application = makeApplication({
       jdText:
         "要求：Flutter、架构（模块化），有 Google Play 上架经验优先",
@@ -152,11 +154,12 @@ describe("matchResumeToJD", () => {
 
     const strengths = result.actions.filter((a) => a.type === "strength");
     const gaps = result.actions.filter((a) => a.type === "gap");
-    const differentiators = result.actions.filter((a) => a.type === "differentiator");
 
-    // Flutter matched (strength), 架构设计 missing (gap), Google Play matched (bonus + strength)
+    // Flutter matched (strength), 架构设计 missing (gap), Google Play matched as strength
     expect(strengths.length).toBeGreaterThanOrEqual(1);
     expect(gaps.length).toBeGreaterThanOrEqual(1);
-    expect(differentiators.length).toBeGreaterThanOrEqual(1);
+    // Google Play was already matched as strength, so no differentiator
+    const differentiators = result.actions.filter((a) => a.type === "differentiator");
+    expect(differentiators.length).toBe(0);
   });
 });

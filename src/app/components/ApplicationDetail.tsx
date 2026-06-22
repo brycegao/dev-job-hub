@@ -117,9 +117,14 @@ export function ApplicationDetail({
         快速更新状态
         <select
           value={application.status}
-          onChange={(event) =>
-            onStatusChange(application, event.target.value as JobStatus)
-          }
+          onChange={(event) => {
+            const newStatus = event.target.value as JobStatus;
+            if (newStatus === application.status) return;
+            const confirmed = window.confirm(
+              `确定将「${application.companyName} · ${application.jobTitle}」的状态\n从「${statusLabels[application.status]}」变更为「${statusLabels[newStatus]}」？`,
+            );
+            if (confirmed) onStatusChange(application, newStatus);
+          }}
         >
           {[application.status, ...statusTransitions[application.status]].map((status) => (
             <option key={status} value={status}>
@@ -273,6 +278,11 @@ export function ApplicationDetail({
         onInterviewCreate={onInterviewCreate}
         onInterviewDelete={onInterviewDelete}
         onInterviewUpdate={onInterviewUpdate}
+        onApplicationStatusAutoUpdate={
+          application.status === "applied"
+            ? () => onStatusChange(application, "interviewing")
+            : undefined
+        }
       />
     </section>
   );

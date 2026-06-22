@@ -9,11 +9,7 @@ import type { InterviewRecord } from "../../interviews/types";
 import { matchResumeToJD } from "../../resume-match/services/resumeMatchService";
 import type { ResumeVersion } from "../../resumes/types";
 import type { PreInterviewBrief } from "../types";
-
-/** 数组去重并过滤空值 */
-function unique(values: string[]): string[] {
-  return Array.from(new Set(values.map((v) => v.trim()).filter(Boolean)));
-}
+import { unique } from "../../../shared/utils/common";
 
 /** 截断文本 */
 function limitText(text: string | undefined, max: number): string {

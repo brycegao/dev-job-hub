@@ -111,16 +111,17 @@ describe("buildApplicationMetrics", () => {
     expect(m1.replies).toBe(0);
     expect(m1.interviewRate).toBe(0);
 
-    // Case 2: has replies -> interviewRate = interviews / replies
+    // Case 2: has replies but no interview records -> interviewRate = 0
     const withReplies: JobApplication[] = [
       makeApplication({ id: "a1", status: "interviewing" }),
       makeApplication({ id: "a2", status: "interviewing" }),
       makeApplication({ id: "a3", status: "applied" }),
     ];
     const m2 = buildApplicationMetrics(withReplies);
-    // interviewing status counts as both reply and interview
+    // interviewing status counts as reply (rejected no longer counts)
     expect(m2.replies).toBe(2);
-    expect(m2.interviewRate).toBeCloseTo(2 / 2);
+    // no interview records -> interview count is 0
+    expect(m2.interviewRate).toBe(0);
   });
 
   it("counts thisWeek only for applications with appliedAt in the current week", () => {

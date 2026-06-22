@@ -2,7 +2,7 @@
  * 设置页数据管理 Hook。
  * 管理数据导入导出、示例数据加载、AI 配置和数据安全提醒。
  */
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   defaultAIConfig,
   isAIConfigured,
@@ -58,6 +58,14 @@ export function useSettings({
   const [settingsMessage, setSettingsMessage] = useState("");
   const [aiConfig, setAIConfig] = useState<AIProviderConfig>(defaultAIConfig);
   const [lastExportTime, setLastExportTime] = useState<string | null>(loadLastExportTime);
+  const messageTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
+
+  /** 显示消息并在 3 秒后自动消失 */
+  function showMessage(msg: string) {
+    clearTimeout(messageTimer.current);
+    setSettingsMessage(msg);
+    messageTimer.current = setTimeout(() => setSettingsMessage(""), 3000);
+  }
 
   /** 从 localStorage 初始化 AI 配置 */
   function initAIConfig() {
@@ -75,7 +83,7 @@ export function useSettings({
     downloadJson(data, `developer-job-hunt-crm-${new Date().toISOString().slice(0, 10)}.json`);
     saveLastExportTime();
     setLastExportTime(loadLastExportTime());
-    setSettingsMessage("已导出当前本地数据。");
+    showMessage("已导出当前本地数据。");
   }
 
   /** 从 JSON 文件导入数据并替换本地数据 */
@@ -101,9 +109,9 @@ export function useSettings({
         applicationId: data.applications[0]?.id ?? null,
         resumeId: data.resumes[0]?.id ?? null,
       });
-      setSettingsMessage("导入完成，已替换当前本地数据。");
+      showMessage("导入完成，已替换当前本地数据。");
     } catch (error) {
-      setSettingsMessage(error instanceof Error ? error.message : "导入失败，请检查文件格式。");
+      showMessage(error instanceof Error ? error.message : "导入失败，请检查文件格式。");
     }
   }
 
@@ -123,14 +131,14 @@ export function useSettings({
       applicationId: "sample-app-1",
       resumeId: "sample-resume-1",
     });
-    setSettingsMessage("已加载示例数据，可用于演示 JD 分析、简历匹配和面试复盘。");
+    showMessage("已加载示例数据，可用于演示 JD 分析、简历匹配和面试复盘。");
   }
 
   /** 清除所有本地数据 */
   async function handleClearAllData() {
     const hasExisting = applications.length > 0 || resumes.length > 0 || interviews.length > 0;
     if (!hasExisting) {
-      setSettingsMessage("当前没有数据需要清除。");
+      showMessage("当前没有数据需要清除。");
       return;
     }
 
@@ -142,9 +150,9 @@ export function useSettings({
     try {
       await replaceAllData({ app: "developer-job-hunt-crm", version: 1, exportedAt: new Date().toISOString(), applications: [], resumes: [], interviews: [] });
       await refresh();
-      setSettingsMessage("已清除全部本地数据。");
+      showMessage("已清除全部本地数据。");
     } catch (error) {
-      setSettingsMessage("清除数据失败，请刷新页面重试。");
+      showMessage("清除数据失败，请刷新页面重试。");
     }
   }
 
@@ -152,7 +160,7 @@ export function useSettings({
   function handleAIConfigSave(config: AIProviderConfig) {
     saveAIConfig(config);
     setAIConfig(config);
-    setSettingsMessage(
+    showMessage(
       isAIConfigured(config)
         ? "AI 配置已保存，可在岗位详情和面试复盘中直接生成。"
         : "AI 配置已保存。当前未启用 Provider，仍使用零配置 Prompt Pack。",

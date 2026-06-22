@@ -30,6 +30,7 @@ export function App() {
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState("");
   const [notifyPermission, setNotifyPermission] = useState(getNotificationPermission());
+  const isFirstLoad = useRef(true);
   type RefreshFn = (nextSelection?: { applicationId?: string | null; resumeId?: string | null }) => Promise<void>;
   const refreshRef = useRef<RefreshFn>(undefined);
 
@@ -66,7 +67,8 @@ export function App() {
     applicationId?: string | null;
     resumeId?: string | null;
   }) {
-    setIsLoading(true);
+    setIsLoading(isFirstLoad.current);
+    isFirstLoad.current = false;
     try {
       const [nextApplications, nextResumes, nextInterviews] = await Promise.all([
         getApplications(),
@@ -133,9 +135,8 @@ export function App() {
   const handleApplicationsCancelEdit = useCallback(() => appData.hideForm(), [appData.hideForm]);
 
   const handleResumesCancelEdit = useCallback(() => {
-    resumeData.setResumeInput({ name: "", targetRole: "", content: "", filePath: "", highlights: [] });
-    resumeData.setIsEditingResume(false);
-  }, [resumeData.setResumeInput, resumeData.setIsEditingResume]);
+    resumeData.hideForm();
+  }, [resumeData.hideForm]);
 
   return (
     <div className="app-shell">
@@ -228,12 +229,14 @@ export function App() {
             selectedResumeId={resumeData.selectedResumeId}
             resumeInput={resumeData.resumeInput}
             isEditingResume={resumeData.isEditingResume}
+            formVisible={resumeData.formVisible}
             onSelectResume={resumeData.setSelectedResumeId}
             onInputChange={resumeData.setResumeInput}
             onSubmit={resumeData.handleResumeSubmit}
             onCancelEdit={handleResumesCancelEdit}
             onEdit={resumeData.startResumeEdit}
             onDelete={resumeData.handleResumeDelete}
+            onShowCreateForm={resumeData.showCreateForm}
           />
         )}
 

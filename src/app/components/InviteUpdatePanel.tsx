@@ -10,9 +10,12 @@ import {
 export function InviteUpdatePanel({
   interview,
   onUpdate,
+  onApplicationStatusAutoUpdate,
 }: {
   interview: InterviewRecord;
   onUpdate: (interview: InterviewRecord) => void;
+  /** 邀约变为 confirmed 时自动将关联岗位状态更新为 interviewing */
+  onApplicationStatusAutoUpdate?: () => void;
 }) {
   const [inviteStatus, setInviteStatus] = useState<InterviewInviteStatus>(
     interview.inviteStatus ?? "not_scheduled",
@@ -35,7 +38,7 @@ export function InviteUpdatePanel({
   }, [interview.id]);
 
   function handleInviteUpdate() {
-    onUpdate({
+    const updated = {
       ...interview,
       inviteStatus,
       scheduledAt,
@@ -43,7 +46,12 @@ export function InviteUpdatePanel({
       nextRound,
       nextScheduledAt,
       inviteNotes,
-    });
+    };
+    onUpdate(updated);
+    // 邀约确认时，自动将关联岗位状态推进到面试中
+    if (inviteStatus === "confirmed" && onApplicationStatusAutoUpdate) {
+      onApplicationStatusAutoUpdate();
+    }
   }
 
   return (

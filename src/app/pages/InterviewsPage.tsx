@@ -49,6 +49,7 @@ export function InterviewsPage({
   onUpdate: (interview: InterviewRecord) => void;
 }) {
   const [searchText, setSearchText] = useState("");
+  const [exportMsg, setExportMsg] = useState("");
 
   const applicationMap = useMemo(
     () => new Map(applications.map((a) => [a.id, a])),
@@ -69,9 +70,13 @@ export function InterviewsPage({
         {hasScheduledInterviews && (
           <button
             className="secondary-action"
-            onClick={() => exportAllInterviewsToCalendar(displayedInterviews, applications)}
+            onClick={() => {
+              exportAllInterviewsToCalendar(displayedInterviews, applications);
+              setExportMsg("已导出日程文件");
+              setTimeout(() => setExportMsg(""), 2000);
+            }}
           >
-            导出全部日程
+            {exportMsg || "导出全部日程"}
           </button>
         )}
       </div>

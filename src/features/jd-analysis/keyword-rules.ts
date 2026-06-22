@@ -15,6 +15,7 @@ import type { KeywordRule } from "./types";
  * - risk: 潜在风险关键词
  */
 export const keywordRules: KeywordRule[] = [
+  // ---- 移动端 ----
   { label: "Flutter", aliases: ["flutter"], category: "tech" },
   { label: "Dart", aliases: ["dart"], category: "tech" },
   { label: "Android", aliases: ["android", "安卓"], category: "tech" },
@@ -23,8 +24,28 @@ export const keywordRules: KeywordRule[] = [
   { label: "React Native", aliases: ["react native", "rn"], category: "tech" },
   { label: "iOS", aliases: ["ios"], category: "tech" },
   { label: "Swift", aliases: ["swift"], category: "tech" },
-  { label: "TypeScript", aliases: ["typescript", "ts"], category: "tech" },
+  // ---- Web 前端 ----
+  { label: "React", aliases: ["react"], category: "tech" },
+  { label: "Vue", aliases: ["vue", "vue3"], category: "tech" },
+  { label: "Next.js", aliases: ["next.js", "nextjs", "nuxt"], category: "tech" },
+  { label: "TypeScript", aliases: ["typescript"], category: "tech" },
   { label: "WebSocket", aliases: ["websocket", "web socket", "长连接"], category: "tech" },
+  // ---- 后端 ----
+  { label: "Node.js", aliases: ["node.js", "nodejs", "node"], category: "tech" },
+  { label: "Go", aliases: ["go", "golang", "go语言"], category: "tech" },
+  { label: "Python", aliases: ["python", "py"], category: "tech" },
+  { label: "C++", aliases: ["c++", "cpp"], category: "tech" },
+  { label: "Rust", aliases: ["rust"], category: "tech" },
+  { label: "GraphQL", aliases: ["graphql", "graph ql"], category: "tech" },
+  { label: "gRPC", aliases: ["grpc"], category: "tech" },
+  // ---- 数据库 ----
+  { label: "PostgreSQL", aliases: ["postgresql", "postgres"], category: "tech" },
+  { label: "MySQL", aliases: ["mysql"], category: "tech" },
+  { label: "MongoDB", aliases: ["mongodb"], category: "tech" },
+  { label: "Redis", aliases: ["redis"], category: "tech" },
+  // ---- 基础设施 ----
+  { label: "Docker", aliases: ["docker", "容器化"], category: "tech" },
+  { label: "Kubernetes", aliases: ["kubernetes", "k8s"], category: "tech" },
   { label: "音视频", aliases: ["音视频", "播放器", "直播", "webrtc"], category: "tech" },
 
   { label: "出海", aliases: ["出海", "海外", "全球化"], category: "domain" },
@@ -35,6 +56,11 @@ export const keywordRules: KeywordRule[] = [
   { label: "大模型", aliases: ["大模型", "llm", "agent"], category: "domain" },
   { label: "工具产品", aliases: ["工具", "效率", "生产力"], category: "domain" },
   { label: "内容社区", aliases: ["内容", "社区", "短视频", "信息流"], category: "domain" },
+  { label: "SaaS", aliases: ["saas"], category: "domain" },
+  { label: "社交", aliases: ["社交", "im", "即时通讯"], category: "domain" },
+  { label: "游戏", aliases: ["游戏", "gamemaker"], category: "domain" },
+  { label: "教育", aliases: ["教育", "在线教育"], category: "domain" },
+  { label: "医疗", aliases: ["医疗", "互联网医疗", "健康"], category: "domain" },
 
   { label: "工程化", aliases: ["工程化", "规范", "代码质量"], category: "capability" },
   { label: "性能优化", aliases: ["性能", "卡顿", "启动优化", "内存优化", "fps"], category: "capability" },
@@ -43,6 +69,9 @@ export const keywordRules: KeywordRule[] = [
   { label: "稳定性治理", aliases: ["稳定性", "崩溃", "crash", "容灾", "降级"], category: "capability" },
   { label: "跨端协作", aliases: ["跨端", "多端", "前端协作"], category: "capability" },
   { label: "团队协作", aliases: ["团队协作", "code review", "代码评审"], category: "capability" },
+  { label: "后端开发", aliases: ["后端开发", "服务端开发", "server"], category: "capability" },
+  { label: "数据库设计", aliases: ["数据库设计", "数据库", "表设计", "分库分表"], category: "capability" },
+  { label: "分布式系统", aliases: ["分布式", "微服务", "高并发", "高可用"], category: "capability" },
 
   { label: "Google Play", aliases: ["google play", "gp 上架", "海外上架"], category: "bonus" },
   { label: "国际化", aliases: ["国际化", "多语言", "i18n", "本地化"], category: "bonus" },
@@ -56,5 +85,4 @@ export const keywordRules: KeywordRule[] = [
   { label: "英语沟通要求", aliases: ["英语", "英文", "跨国沟通"], category: "risk" },
   { label: "高年限要求", aliases: ["5年以上", "五年以上", "8年以上", "八年以上"], category: "risk" },
   { label: "高强度交付", aliases: ["抗压", "高强度", "快速迭代", "996"], category: "risk" },
-  { label: "全栈泛化要求", aliases: ["全栈", "后端", "服务端", "运维"], category: "risk" },
 ];

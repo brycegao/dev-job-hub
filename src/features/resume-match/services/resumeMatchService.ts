@@ -79,8 +79,10 @@ export function matchResumeToJD(
     });
   }
 
-  // differentiator：JD 加分项 × 简历亮点，差异化卖点
+  // differentiator：JD 加分项 × 简历亮点，差异化卖点（排除已被 strength 覆盖的）
+  const matchedStrengths = new Set(actions.filter((a) => a.type === "strength").map((a) => a.keyword));
   for (const bonus of jdAnalysis.bonusKeywords) {
+    if (matchedStrengths.has(bonus)) continue;
     if (includesAny(resumeText, bonus)) {
       const highlight = findMatchingHighlight(bonus, resume.highlights);
       actions.push({

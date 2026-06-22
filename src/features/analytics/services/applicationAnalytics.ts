@@ -24,7 +24,7 @@ export type ApplicationMetrics = {
   total: number;
   /** 本周投递数 */
   thisWeek: number;
-  /** 收到回复数（含面试/offer/拒绝） */
+  /** 收到回复数（面试/offer） */
   replies: number;
   /** 进入面试数 */
   interviews: number;
@@ -82,17 +82,14 @@ export function buildApplicationMetrics(
   );
 
   const replies = applications.filter((application) =>
-    ["interviewing", "offer", "rejected"].includes(application.status),
+    ["interviewing", "offer"].includes(application.status),
   ).length;
   const applicationIdsWithInterviews = new Set(
     interviewRecords
       .filter((record) => record.inviteStatus !== "cancelled")
       .map((record) => record.jobApplicationId),
   );
-  const interviewCount = applications.filter((application) =>
-    applicationIdsWithInterviews.has(application.id) ||
-    ["interviewing", "offer", "rejected"].includes(application.status),
-  ).length;
+  const interviewCount = applicationIdsWithInterviews.size;
   const offers = applications.filter((application) => application.status === "offer").length;
   const thisWeek = applications.filter((application) => {
     if (!application.appliedAt) {

@@ -1,7 +1,7 @@
 import type { ApplicationMetrics } from "../../features/analytics/services/applicationAnalytics";
 import { MetricCard } from "../components/MetricCard";
 import { TextList } from "../components/TextList";
-import { formatPercent } from "../constants";
+import { formatPercent } from "../../shared/utils/common";
 
 const FUNNEL_STEPS = [
   { key: "total", label: "投递" },

@@ -12,7 +12,7 @@ export type InterviewRound =
   | "other";
 
 /** 面试结果 */
-export type InterviewResult = "pending" | "passed" | "failed" | "unknown";
+export type InterviewResult = "pending" | "passed" | "failed";
 
 /** 面试邀约状态 */
 export type InterviewInviteStatus =
@@ -76,7 +76,6 @@ export const interviewResultLabels: Record<InterviewResult, string> = {
   pending: "待反馈",
   passed: "通过",
   failed: "未通过",
-  unknown: "未知",
 };
 
 /** 面试邀约状态中文标签 */

@@ -9,11 +9,7 @@ import type { InterviewRecord } from "../../interviews/types";
 import { analyzeJD } from "../../jd-analysis/services/jdAnalysisService";
 import type { ResumeVersion } from "../../resumes/types";
 import type { InterviewAnswerPack, InterviewPrepPack } from "../types";
-
-/** 数组去重并过滤空值 */
-function unique(values: string[]): string[] {
-  return Array.from(new Set(values.map((value) => value.trim()).filter(Boolean)));
-}
+import { unique } from "../../../shared/utils/common";
 
 /** 截断文本到指定长度，超出部分以省略号结尾 */
 function limitText(text: string | undefined, maxLength: number): string {
@@ -122,7 +118,7 @@ export function buildInterviewPrepPack(
     projectStories,
     reviewChecklist,
     prompt: [
-      "你是资深移动端面试官和求职教练。请基于下面信息，帮我生成一份可执行的面试准备方案。",
+      "你是资深面试官和求职教练。请基于下面信息，帮我生成一份可执行的面试准备方案。",
       "",
       "输出格式：",
       "1. 岗位画像",
@@ -144,7 +140,7 @@ export function buildInterviewPrepPack(
       historicalWeakPoints.length
         ? `历史面试薄弱点：\n${lines("薄弱点", historicalWeakPoints.slice(0, 6))}\n`
         : "",
-      "要求：回答要具体，不要泛泛而谈；优先围绕移动端工程化、App 上线交付、业务稳定性和岗位关键词展开。",
+      "要求：回答要具体，不要泛泛而谈；围绕岗位关键词、项目经历、工程能力展开。",
     ].join("\n"),
   };
 }
@@ -212,7 +208,7 @@ export function buildInterviewAnswerPack(input: {
     starTemplate,
     followUpQuestions,
     prompt: [
-      "你是资深移动端面试官。请基于下面的面试问题和我的复盘，帮我输出更好的参考答案。",
+      "你是资深面试官。请基于下面的面试问题和我的复盘，帮我输出更好的参考答案。",
       "",
       "输出格式：",
       "1. 每个问题的优秀回答版本",

@@ -14,7 +14,7 @@ import {
   type InterviewRound,
 } from "../../features/interviews/types";
 import type { ResumeVersion } from "../../features/resumes/types";
-import { createId } from "../../shared/utils/common";
+import { createId, parseLines } from "../../shared/utils/common";
 import { InterviewRecordCard } from "./InterviewRecordCard";
 
 export function InterviewSection({
@@ -25,6 +25,7 @@ export function InterviewSection({
   onInterviewCreate,
   onInterviewDelete,
   onInterviewUpdate,
+  onApplicationStatusAutoUpdate,
 }: {
   application: JobApplication;
   resume?: ResumeVersion;
@@ -33,8 +34,10 @@ export function InterviewSection({
   onInterviewCreate: (input: InterviewRecordInput) => void;
   onInterviewDelete: (interview: InterviewRecord) => void;
   onInterviewUpdate: (interview: InterviewRecord) => void;
+  onApplicationStatusAutoUpdate?: () => void;
 }) {
   const [editingInterview, setEditingInterview] = useState<InterviewRecord | null>(null);
+  const [showReview, setShowReview] = useState(false);
   const [round, setRound] = useState<InterviewRound>("first");
   const [inviteStatus, setInviteStatus] = useState<InterviewInviteStatus>("invited");
   const [invitedAt, setInvitedAt] = useState(new Date().toISOString().slice(0, 16));
@@ -98,13 +101,6 @@ export function InterviewSection({
   function cancelEditInterview() {
     setEditingInterview(null);
     resetForm();
-  }
-
-  function parseLines(text: string): string[] {
-    return text
-      .split("\n")
-      .map((item) => item.trim())
-      .filter(Boolean);
   }
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -296,6 +292,14 @@ export function InterviewSection({
             </select>
           </label>
         </div>
+        <button
+          type="button"
+          className="secondary-action"
+          onClick={() => setShowReview((v) => !v)}
+        >
+          {showReview ? "收起复盘" : "展开面试复盘"}
+        </button>
+        {showReview && (
         <div className="review-template">
           <div className="section-title-row">
             <h3>结构化复盘</h3>
@@ -380,6 +384,7 @@ export function InterviewSection({
             />
           </label>
         </div>
+        )}
         <div className="form-actions">
           <button className="primary" type="submit">
             {editingInterview ? "更新面试记录" : "保存面试记录"}
@@ -402,6 +407,7 @@ export function InterviewSection({
             onDelete={onInterviewDelete}
             onUpdate={onInterviewUpdate}
             onStartEdit={startEditInterview}
+            onApplicationStatusAutoUpdate={onApplicationStatusAutoUpdate}
           />
         ))}
       </div>

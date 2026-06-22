@@ -2,7 +2,7 @@ import type { ApplicationMetrics } from "../../features/analytics/services/appli
 import { interviewRoundLabels } from "../../features/interviews/types";
 import { MetricCard } from "../components/MetricCard";
 import { StatusBars } from "../components/StatusBars";
-import { formatPercent } from "../constants";
+import { formatPercent, formatDate, formatDateTime } from "../../shared/utils/common";
 
 export function DashboardPage({
   metrics,
@@ -36,12 +36,16 @@ export function DashboardPage({
         </section>
       )}
 
-      <MetricCard label="总投递" value={metrics.total} />
-      <MetricCard label="本周投递" value={metrics.thisWeek} />
-      <MetricCard label="回复数" value={metrics.replies} />
-      <MetricCard label="面试数" value={metrics.interviews} />
-      <MetricCard label="Offer" value={metrics.offers} />
-      <MetricCard label="回复率" value={formatPercent(metrics.replyRate)} />
+      {!isEmpty && (
+        <>
+          <MetricCard label="总投递" value={metrics.total} />
+          <MetricCard label="本周投递" value={metrics.thisWeek} />
+          <MetricCard label="回复数" value={metrics.replies} />
+          <MetricCard label="面试数" value={metrics.interviews} />
+          <MetricCard label="Offer" value={metrics.offers} />
+          <MetricCard label="回复率" value={formatPercent(metrics.replyRate)} />
+        </>
+      )}
 
       <section className="panel wide">
         <div className="panel-header">
@@ -60,7 +64,7 @@ export function DashboardPage({
                   {item.companyName} · {item.jobTitle}
                   <small> {interviewRoundLabels[item.interview.round]}</small>
                 </span>
-                <strong>{item.interview.scheduledAt?.replace("T", " ")}</strong>
+                <strong>{formatDateTime(item.interview.scheduledAt)}</strong>
               </button>
             ))}
           </div>
@@ -81,19 +85,21 @@ export function DashboardPage({
                 onClick={() => onFollowUpClick(application.id)}
               >
                 <span>{application.companyName} · {application.jobTitle}</span>
-                <strong>{application.nextFollowUpAt}</strong>
+                <strong>{formatDate(application.nextFollowUpAt)}</strong>
               </button>
             ))}
           </div>
         )}
       </section>
 
-      <section className="panel">
-        <div className="panel-header">
-          <h2>状态分布</h2>
-        </div>
-        <StatusBars metrics={metrics.statusCounts} />
-      </section>
+      {!isEmpty && (
+        <section className="panel">
+          <div className="panel-header">
+            <h2>状态分布</h2>
+          </div>
+          <StatusBars metrics={metrics.statusCounts} />
+        </section>
+      )}
     </section>
   );
 }

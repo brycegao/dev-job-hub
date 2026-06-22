@@ -31,6 +31,21 @@ export function useResumeData({
   const [selectedResumeId, setSelectedResumeId] = useState<string | null>(null);
   const [resumeInput, setResumeInput] = useState<ResumeVersionInput>(defaultResumeInput);
   const [isEditingResume, setIsEditingResume] = useState(false);
+  const [formVisible, setFormVisible] = useState(false);
+
+  /** 显示新建表单 */
+  function showCreateForm() {
+    setResumeInput(defaultResumeInput);
+    setIsEditingResume(false);
+    setFormVisible(true);
+  }
+
+  /** 隐藏表单 */
+  function hideForm() {
+    setFormVisible(false);
+    setIsEditingResume(false);
+    setResumeInput(defaultResumeInput);
+  }
 
   /** 从 refresh 回调中同步简历列表数据 */
   function setResumesFromRefresh(data: ResumeVersion[]) {
@@ -63,6 +78,7 @@ export function useResumeData({
 
       setResumeInput(defaultResumeInput);
       setIsEditingResume(false);
+      setFormVisible(false);
       await refresh();
     } catch {
       onError("保存简历失败，请重试。");
@@ -80,6 +96,7 @@ export function useResumeData({
       highlights: resume.highlights,
     });
     setIsEditingResume(true);
+    setFormVisible(true);
     setPage("resumes");
   }
 
@@ -124,7 +141,9 @@ export function useResumeData({
     resumeInput,
     setResumeInput,
     isEditingResume,
-    setIsEditingResume,
+    formVisible,
+    showCreateForm,
+    hideForm,
     setResumesFromRefresh,
     handleResumeSubmit,
     startResumeEdit,

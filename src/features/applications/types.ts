@@ -81,10 +81,10 @@ export const statusPillClass: Record<JobStatus, string> = {
  * 状态流转规则：每个状态允许转到的目标状态。
  */
 export const statusTransitions: Record<JobStatus, JobStatus[]> = {
-  applied: ["interviewing", "offer", "rejected", "no_response", "not_fit"],
-  interviewing: ["offer", "rejected"],
-  offer: [],
-  rejected: [],
-  no_response: [],
-  not_fit: [],
+  applied: ["interviewing", "rejected", "no_response", "not_fit"],
+  interviewing: ["offer", "rejected", "no_response", "not_fit"],
+  offer: ["rejected"],
+  rejected: ["applied", "interviewing"],
+  no_response: ["applied", "interviewing", "rejected"],
+  not_fit: ["applied", "interviewing"],
 };
