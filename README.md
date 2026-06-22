@@ -15,6 +15,7 @@
 - 多简历版本管理
 - 岗位关联简历与匹配建议
 - 零配置 AI Prompt Pack：生成面试准备建议、参考答案 Prompt、一键复制到常用 AI
+- 可选 AI Provider：支持 OpenAI compatible API / Ollama 直接生成
 - 面试记录、问题标签、薄弱点复盘
 - Dashboard 基础指标
 - 岗位列表与详情
@@ -30,7 +31,8 @@
 - 默认生成本地基础建议
 - 自动拼装高质量 Prompt
 - 一键复制到 ChatGPT / DeepSeek / 豆包 / Kimi 等常用 AI
-- 后续再扩展 OpenAI compatible API 或 Ollama 本地模型
+- 可选配置 OpenAI compatible API 或 Ollama 本地模型后，可在页面内直接生成 AI 结果
+- API Key 只保存在当前浏览器 `localStorage`，不进入导入导出数据包
 
 ## 本地运行
 

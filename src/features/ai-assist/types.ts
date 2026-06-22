@@ -12,3 +12,17 @@ export type InterviewAnswerPack = {
   followUpQuestions: string[];
   prompt: string;
 };
+
+export type AIProviderType = "none" | "openai-compatible" | "ollama";
+
+export type AIProviderConfig = {
+  provider: AIProviderType;
+  baseUrl: string;
+  apiKey: string;
+  model: string;
+};
+
+export type AICompletionInput = {
+  prompt: string;
+  config: AIProviderConfig;
+};

@@ -148,6 +148,13 @@
 - 用户配置 API 后，可以生成更自然的 JD 分析
 - 未配置 API 时，本地规则仍可用
 
+当前状态：
+
+- 已支持设置页保存 AI Provider 配置
+- 已支持 OpenAI compatible API 和 Ollama
+- 已支持岗位面试准备、面试参考答案直接生成
+- API Key 仅存储在浏览器 localStorage
+
 ## Slice 6A: 零配置 AI Prompt Pack
 
 目标：

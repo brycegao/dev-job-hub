@@ -1,10 +1,18 @@
 import { FormEvent, type ReactNode, useEffect, useMemo, useState } from "react";
 import { buildApplicationMetrics } from "../features/analytics/services/applicationAnalytics";
+import { generateAICompletion } from "../features/ai-assist/services/aiCompletionService";
+import {
+  defaultAIConfig,
+  isAIConfigured,
+  loadAIConfig,
+  saveAIConfig,
+} from "../features/ai-assist/services/aiConfigService";
 import {
   buildInterviewAnswerPack,
   buildInterviewPrepPack,
 } from "../features/ai-assist/services/promptPackService";
 import type {
+  AIProviderConfig,
   InterviewAnswerPack,
   InterviewPrepPack,
 } from "../features/ai-assist/types";
@@ -118,6 +126,7 @@ export function App() {
   const [isEditingResume, setIsEditingResume] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [settingsMessage, setSettingsMessage] = useState("");
+  const [aiConfig, setAIConfig] = useState<AIProviderConfig>(defaultAIConfig);
 
   async function refresh(nextSelection?: {
     applicationId?: string | null;
@@ -149,6 +158,7 @@ export function App() {
 
   useEffect(() => {
     void refresh();
+    setAIConfig(loadAIConfig());
   }, []);
 
   const selectedApplication = applications.find(
@@ -320,6 +330,16 @@ export function App() {
     setSettingsMessage("已加载示例数据，可用于演示 JD 分析、简历匹配和面试复盘。");
   }
 
+  function handleAIConfigSave(config: AIProviderConfig) {
+    saveAIConfig(config);
+    setAIConfig(config);
+    setSettingsMessage(
+      isAIConfigured(config)
+        ? "AI 配置已保存，可在岗位详情和面试复盘中直接生成。"
+        : "AI 配置已保存。当前未启用 Provider，仍使用零配置 Prompt Pack。",
+    );
+  }
+
   return (
     <div className="app-shell">
       <aside className="sidebar">
@@ -463,6 +483,7 @@ export function App() {
                   interviews={interviews.filter(
                     (interview) => interview.jobApplicationId === selectedApplication.id,
                   )}
+                  aiConfig={aiConfig}
                   onEdit={startEdit}
                   onDelete={handleDelete}
                   onStatusChange={handleStatusChange}
@@ -544,6 +565,7 @@ export function App() {
                       resume={resumes.find(
                         (resume) => resume.id === application?.resumeVersionId,
                       )}
+                      aiConfig={aiConfig}
                       onDelete={handleInterviewDelete}
                     />
                   );
@@ -584,6 +606,8 @@ export function App() {
             onExport={handleExportData}
             onImport={handleImportFile}
             onLoadSample={handleLoadSampleData}
+            aiConfig={aiConfig}
+            onAIConfigSave={handleAIConfigSave}
           />
         )}
       </main>
@@ -599,6 +623,8 @@ function SettingsPage({
   onExport,
   onImport,
   onLoadSample,
+  aiConfig,
+  onAIConfigSave,
 }: {
   applicationsCount: number;
   resumesCount: number;
@@ -607,7 +633,16 @@ function SettingsPage({
   onExport: () => void;
   onImport: (file: File | null) => void;
   onLoadSample: () => void;
+  aiConfig: AIProviderConfig;
+  onAIConfigSave: (config: AIProviderConfig) => void;
 }) {
+  const [draftAIConfig, setDraftAIConfig] = useState<AIProviderConfig>(aiConfig);
+  const [showAIHelp, setShowAIHelp] = useState(false);
+
+  useEffect(() => {
+    setDraftAIConfig(aiConfig);
+  }, [aiConfig]);
+
   return (
     <section className="page-grid">
       <MetricCard label="岗位记录" value={applicationsCount} />
@@ -654,6 +689,100 @@ function SettingsPage({
             <li>卸载浏览器或清理站点数据可能导致本地记录丢失。</li>
           </ul>
         </div>
+      </section>
+
+      <section className="panel wide">
+        <div className="panel-header">
+          <div>
+            <div className="title-with-help">
+              <h2>AI Provider</h2>
+              <button
+                type="button"
+                className="help-button"
+                aria-label="查看 AI Provider 帮助"
+                aria-expanded={showAIHelp}
+                onClick={() => setShowAIHelp((value) => !value)}
+              >
+                ?
+              </button>
+              {showAIHelp && (
+                <div className="help-popover" role="note">
+                  <strong>AI Provider 怎么选？</strong>
+                  <ul>
+                    <li>不启用：使用本地建议和复制 Prompt，零成本、零配置。</li>
+                    <li>OpenAI Compatible：填写兼容接口地址、模型和 API Key。</li>
+                    <li>Ollama：填写本地地址和模型名，API Key 可留空。</li>
+                    <li>API Key 只保存在当前浏览器 localStorage。</li>
+                    <li>纯 Web 直连云 API 可能遇到 CORS 限制。</li>
+                  </ul>
+                </div>
+              )}
+            </div>
+            <p>可选配置。未配置时仍可使用本地建议和一键复制 Prompt。</p>
+          </div>
+        </div>
+        <form
+          className="form-panel"
+          onSubmit={(event) => {
+            event.preventDefault();
+            onAIConfigSave(draftAIConfig);
+          }}
+        >
+          <div className="form-grid">
+            <label>
+              Provider
+              <select
+                value={draftAIConfig.provider}
+                onChange={(event) =>
+                  setDraftAIConfig({
+                    ...draftAIConfig,
+                    provider: event.target.value as AIProviderConfig["provider"],
+                  })
+                }
+              >
+                <option value="none">不启用，使用 Prompt Pack</option>
+                <option value="openai-compatible">OpenAI Compatible</option>
+                <option value="ollama">Ollama 本地模型</option>
+              </select>
+            </label>
+            <label>
+              Model
+              <input
+                value={draftAIConfig.model}
+                onChange={(event) =>
+                  setDraftAIConfig({ ...draftAIConfig, model: event.target.value })
+                }
+                placeholder="gpt-4.1-mini / deepseek-chat / qwen2.5"
+              />
+            </label>
+            <label>
+              Base URL
+              <input
+                value={draftAIConfig.baseUrl}
+                onChange={(event) =>
+                  setDraftAIConfig({ ...draftAIConfig, baseUrl: event.target.value })
+                }
+                placeholder="https://api.openai.com / http://localhost:11434"
+              />
+            </label>
+            <label>
+              API Key
+              <input
+                type="password"
+                value={draftAIConfig.apiKey}
+                onChange={(event) =>
+                  setDraftAIConfig({ ...draftAIConfig, apiKey: event.target.value })
+                }
+                placeholder="Ollama 可留空"
+              />
+            </label>
+          </div>
+          <div className="form-actions">
+            <button className="primary" type="submit">
+              保存 AI 配置
+            </button>
+          </div>
+        </form>
       </section>
     </section>
   );
@@ -839,6 +968,7 @@ function ApplicationDetail({
   application,
   resumes,
   interviews,
+  aiConfig,
   onEdit,
   onDelete,
   onStatusChange,
@@ -849,6 +979,7 @@ function ApplicationDetail({
   application: JobApplication;
   resumes: ResumeVersion[];
   interviews: InterviewRecord[];
+  aiConfig: AIProviderConfig;
   onEdit: (application: JobApplication) => void;
   onDelete: (application: JobApplication) => void;
   onStatusChange: (application: JobApplication, status: JobStatus) => void;
@@ -860,6 +991,8 @@ function ApplicationDetail({
   const [matchResult, setMatchResult] = useState<ResumeMatchResult | null>(null);
   const [prepPack, setPrepPack] = useState<InterviewPrepPack | null>(null);
   const [copyMessage, setCopyMessage] = useState("");
+  const [aiPrepResult, setAIPrepResult] = useState("");
+  const [aiPrepStatus, setAIPrepStatus] = useState("");
   const linkedResume = resumes.find((resume) => resume.id === application.resumeVersionId);
 
   useEffect(() => {
@@ -867,11 +1000,31 @@ function ApplicationDetail({
     setMatchResult(null);
     setPrepPack(null);
     setCopyMessage("");
+    setAIPrepResult("");
+    setAIPrepStatus("");
   }, [application.id, application.jdText]);
 
   async function handleCopyPrepPrompt(prompt: string) {
     await copyText(prompt);
     setCopyMessage("已复制面试准备 Prompt，可粘贴到 ChatGPT / DeepSeek / 豆包。");
+  }
+
+  async function handleGeneratePrepWithAI(prompt: string) {
+    if (!isAIConfigured(aiConfig)) {
+      setAIPrepStatus("请先在设置页配置 AI Provider，或继续使用复制 Prompt。");
+      return;
+    }
+
+    try {
+      setAIPrepStatus("AI 生成中...");
+      const result = await generateAICompletion({ prompt, config: aiConfig });
+      setAIPrepResult(result);
+      setAIPrepStatus("AI 生成完成。");
+    } catch (error) {
+      setAIPrepStatus(
+        error instanceof Error ? error.message : "AI 生成失败，请检查配置。",
+      );
+    }
   }
 
   return (
@@ -980,6 +1133,10 @@ function ApplicationDetail({
             prompt={prepPack.prompt}
             copyLabel="复制 Prompt"
             onCopy={() => handleCopyPrepPrompt(prepPack.prompt)}
+            onGenerateAI={() => handleGeneratePrepWithAI(prepPack.prompt)}
+            aiEnabled={isAIConfigured(aiConfig)}
+            aiStatus={aiPrepStatus}
+            aiText={aiPrepResult}
             message={copyMessage}
           >
             <TextList title="重点准备" values={prepPack.focusAreas} />
@@ -998,6 +1155,7 @@ function ApplicationDetail({
       <InterviewSection
         application={application}
         resume={linkedResume}
+        aiConfig={aiConfig}
         interviews={interviews}
         onInterviewCreate={onInterviewCreate}
         onInterviewDelete={onInterviewDelete}
@@ -1009,12 +1167,14 @@ function ApplicationDetail({
 function InterviewSection({
   application,
   resume,
+  aiConfig,
   interviews,
   onInterviewCreate,
   onInterviewDelete,
 }: {
   application: JobApplication;
   resume?: ResumeVersion;
+  aiConfig: AIProviderConfig;
   interviews: InterviewRecord[];
   onInterviewCreate: (input: InterviewRecordInput) => void;
   onInterviewDelete: (interview: InterviewRecord) => void;
@@ -1178,6 +1338,7 @@ function InterviewSection({
             interview={interview}
             application={application}
             resume={resume}
+            aiConfig={aiConfig}
             onDelete={onInterviewDelete}
           />
         ))}
@@ -1190,19 +1351,41 @@ function InterviewRecordCard({
   interview,
   application,
   resume,
+  aiConfig,
   onDelete,
 }: {
   interview: InterviewRecord;
   application?: JobApplication;
   resume?: ResumeVersion;
+  aiConfig: AIProviderConfig;
   onDelete: (interview: InterviewRecord) => void;
 }) {
   const [answerPack, setAnswerPack] = useState<InterviewAnswerPack | null>(null);
   const [copyMessage, setCopyMessage] = useState("");
+  const [aiAnswerResult, setAIAnswerResult] = useState("");
+  const [aiAnswerStatus, setAIAnswerStatus] = useState("");
 
   async function handleCopyAnswerPrompt(prompt: string) {
     await copyText(prompt);
     setCopyMessage("已复制参考答案 Prompt。");
+  }
+
+  async function handleGenerateAnswerWithAI(prompt: string) {
+    if (!isAIConfigured(aiConfig)) {
+      setAIAnswerStatus("请先在设置页配置 AI Provider，或继续使用复制 Prompt。");
+      return;
+    }
+
+    try {
+      setAIAnswerStatus("AI 生成中...");
+      const result = await generateAICompletion({ prompt, config: aiConfig });
+      setAIAnswerResult(result);
+      setAIAnswerStatus("AI 生成完成。");
+    } catch (error) {
+      setAIAnswerStatus(
+        error instanceof Error ? error.message : "AI 生成失败，请检查配置。",
+      );
+    }
   }
 
   return (
@@ -1265,6 +1448,10 @@ function InterviewRecordCard({
             prompt={answerPack.prompt}
             copyLabel="复制 Prompt"
             onCopy={() => handleCopyAnswerPrompt(answerPack.prompt)}
+            onGenerateAI={() => handleGenerateAnswerWithAI(answerPack.prompt)}
+            aiEnabled={isAIConfigured(aiConfig)}
+            aiStatus={aiAnswerStatus}
+            aiText={aiAnswerResult}
             message={copyMessage}
           >
             <TextList title="回答角度" values={answerPack.answerAngles} />
@@ -1426,25 +1613,45 @@ function PromptPackCard({
   prompt,
   copyLabel,
   message,
+  aiEnabled,
+  aiStatus,
+  aiText,
   onCopy,
+  onGenerateAI,
   children,
 }: {
   title: string;
   prompt: string;
   copyLabel: string;
   message: string;
+  aiEnabled: boolean;
+  aiStatus: string;
+  aiText: string;
   onCopy: () => void;
+  onGenerateAI: () => void;
   children: ReactNode;
 }) {
   return (
     <div className="prompt-pack">
       <div className="prompt-pack-header">
         <span>{title}</span>
-        <button className="secondary-action" type="button" onClick={onCopy}>
-          {copyLabel}
-        </button>
+        <div className="prompt-actions">
+          <button className="secondary-action" type="button" onClick={onGenerateAI}>
+            {aiEnabled ? "直接生成" : "未配置 AI"}
+          </button>
+          <button className="secondary-action" type="button" onClick={onCopy}>
+            {copyLabel}
+          </button>
+        </div>
       </div>
       <div className="prompt-pack-grid">{children}</div>
+      {aiStatus && <p className="ai-status">{aiStatus}</p>}
+      {aiText && (
+        <div className="ai-result">
+          <span>AI 结果</span>
+          <pre>{aiText}</pre>
+        </div>
+      )}
       <details className="prompt-preview">
         <summary>查看完整 Prompt</summary>
         <pre>{prompt}</pre>
