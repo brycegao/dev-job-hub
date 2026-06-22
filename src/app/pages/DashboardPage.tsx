@@ -1,22 +1,14 @@
-import type { JobApplication } from "../../features/applications/types";
-import { formatPercent } from "../constants";
+import type { ApplicationMetrics } from "../../features/analytics/services/applicationAnalytics";
+import { interviewRoundLabels } from "../../features/interviews/types";
 import { MetricCard } from "../components/MetricCard";
 import { StatusBars } from "../components/StatusBars";
+import { formatPercent } from "../constants";
 
 export function DashboardPage({
   metrics,
   onFollowUpClick,
 }: {
-  metrics: {
-    total: number;
-    thisWeek: number;
-    replies: number;
-    interviews: number;
-    offers: number;
-    replyRate: number;
-    followUps: JobApplication[];
-    statusCounts: Partial<Record<string, number>>;
-  };
+  metrics: ApplicationMetrics;
   onFollowUpClick: (applicationId: string) => void;
 }) {
   return (
@@ -29,6 +21,30 @@ export function DashboardPage({
       <MetricCard label="回复率" value={formatPercent(metrics.replyRate)} />
 
       <section className="panel wide">
+        <div className="panel-header">
+          <h2>近 7 天待面试</h2>
+        </div>
+        {metrics.upcomingInterviews.length === 0 ? (
+          <p className="empty">暂无近 7 天的面试邀约。</p>
+        ) : (
+          <div className="simple-list">
+            {metrics.upcomingInterviews.map((item) => (
+              <button
+                key={item.interview.id}
+                onClick={() => onFollowUpClick(item.applicationId)}
+              >
+                <span>
+                  {item.companyName} · {item.jobTitle}
+                  <small> {interviewRoundLabels[item.interview.round]}</small>
+                </span>
+                <strong>{item.interview.scheduledAt?.replace("T", " ")}</strong>
+              </button>
+            ))}
+          </div>
+        )}
+      </section>
+
+      <section className="panel">
         <div className="panel-header">
           <h2>最近需要跟进</h2>
         </div>

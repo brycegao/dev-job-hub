@@ -1,6 +1,13 @@
 import type { JobApplication, JobStatus } from "../../applications/types";
 import type { InterviewRecord } from "../../interviews/types";
 
+export type UpcomingInterview = {
+  interview: InterviewRecord;
+  companyName: string;
+  jobTitle: string;
+  applicationId: string;
+};
+
 export type ApplicationMetrics = {
   total: number;
   thisWeek: number;
@@ -12,6 +19,7 @@ export type ApplicationMetrics = {
   statusCounts: Record<JobStatus, number>;
   channelCounts: Record<string, number>;
   followUps: JobApplication[];
+  upcomingInterviews: UpcomingInterview[];
 };
 
 function startOfWeek(date: Date): Date {
@@ -68,6 +76,28 @@ export function buildApplicationMetrics(
     .sort((a, b) => String(a.nextFollowUpAt).localeCompare(String(b.nextFollowUpAt)))
     .slice(0, 5);
 
+  const now = new Date();
+  const sevenDaysLater = new Date(now);
+  sevenDaysLater.setDate(sevenDaysLater.getDate() + 7);
+  const applicationMap = new Map(applications.map((a) => [a.id, a]));
+  const upcomingInterviews = interviewRecords
+    .filter((record) => {
+      if (!record.scheduledAt || record.inviteStatus === "cancelled") return false;
+      const date = new Date(record.scheduledAt);
+      return date >= now && date <= sevenDaysLater;
+    })
+    .sort((a, b) => (a.scheduledAt || "").localeCompare(b.scheduledAt || ""))
+    .slice(0, 10)
+    .map((record) => {
+      const app = applicationMap.get(record.jobApplicationId);
+      return {
+        interview: record,
+        companyName: app?.companyName || "未知公司",
+        jobTitle: app?.jobTitle || "未知岗位",
+        applicationId: record.jobApplicationId,
+      };
+    });
+
   return {
     total: applications.length,
     thisWeek,
@@ -79,5 +109,6 @@ export function buildApplicationMetrics(
     statusCounts,
     channelCounts,
     followUps,
+    upcomingInterviews,
   };
 }
