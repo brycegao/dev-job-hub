@@ -685,6 +685,67 @@ textarea {
   font-weight: 700;
 }
 
+.help-steps {
+  display: grid;
+  gap: 12px;
+}
+
+.help-steps article {
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr);
+  gap: 12px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  background: #f8fafc;
+  padding: 12px;
+}
+
+.help-steps article > span {
+  display: grid;
+  width: 34px;
+  height: 34px;
+  place-items: center;
+  border-radius: 8px;
+  background: #0f766e;
+  color: #fff;
+  font-weight: 900;
+}
+
+.help-steps strong {
+  display: block;
+  margin-bottom: 4px;
+  color: #111827;
+}
+
+.help-steps p {
+  margin: 0;
+  color: #475569;
+  line-height: 1.7;
+}
+
+.workflow-strip {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.workflow-strip span {
+  border: 1px solid #ccfbf1;
+  border-radius: 8px;
+  background: #f0fdfa;
+  color: #0f766e;
+  padding: 8px 10px;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.workflow-strip i {
+  color: #94a3b8;
+  font-style: normal;
+  font-weight: 900;
+}
+
 .title-with-help {
   position: relative;
   display: inline-flex;
@@ -815,7 +876,7 @@ textarea {
   }
 
   .nav {
-    grid-template-columns: repeat(6, 1fr);
+    grid-template-columns: repeat(7, 1fr);
   }
 
   .workspace,
