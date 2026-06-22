@@ -1,0 +1,236 @@
+import { useState, useEffect } from "react";
+import { generateAICompletion } from "../../features/ai-assist/services/aiCompletionService";
+import {
+  isAIConfigured,
+} from "../../features/ai-assist/services/aiConfigService";
+import {
+  buildInterviewPrepPack,
+} from "../../features/ai-assist/services/promptPackService";
+import type {
+  AIProviderConfig,
+  InterviewPrepPack,
+} from "../../features/ai-assist/types";
+import {
+  activeStatuses,
+  closedStatuses,
+  statusLabels,
+  type JobApplication,
+  type JobStatus,
+} from "../../features/applications/types";
+import {
+  interviewResultLabels,
+  type InterviewRecord,
+  type InterviewRecordInput,
+} from "../../features/interviews/types";
+import { analyzeJD } from "../../features/jd-analysis/services/jdAnalysisService";
+import type { JDAnalysisResult } from "../../features/jd-analysis/types";
+import { matchResumeToJD } from "../../features/resume-match/services/resumeMatchService";
+import type { ResumeMatchResult } from "../../features/resume-match/types";
+import type { ResumeVersion } from "../../features/resumes/types";
+import { copyText } from "../constants";
+import { ApplicationForm } from "./ApplicationForm";
+import { InterviewSection } from "./InterviewSection";
+import { JDAnalysisCard } from "./JDAnalysisCard";
+import { PromptPackCard } from "./PromptPackCard";
+import { ResumeMatchCard } from "./ResumeMatchCard";
+import { TextList } from "./TextList";
+
+export function ApplicationDetail({
+  application,
+  resumes,
+  interviews,
+  aiConfig,
+  onEdit,
+  onDelete,
+  onStatusChange,
+  onResumeLink,
+  onInterviewCreate,
+  onInterviewDelete,
+}: {
+  application: JobApplication;
+  resumes: ResumeVersion[];
+  interviews: InterviewRecord[];
+  aiConfig: AIProviderConfig;
+  onEdit: (application: JobApplication) => void;
+  onDelete: (application: JobApplication) => void;
+  onStatusChange: (application: JobApplication, status: JobStatus) => void;
+  onResumeLink: (application: JobApplication, resumeVersionId: string) => void;
+  onInterviewCreate: (input: InterviewRecordInput) => void;
+  onInterviewDelete: (interview: InterviewRecord) => void;
+}) {
+  const [analysis, setAnalysis] = useState<JDAnalysisResult | null>(null);
+  const [matchResult, setMatchResult] = useState<ResumeMatchResult | null>(null);
+  const [prepPack, setPrepPack] = useState<InterviewPrepPack | null>(null);
+  const [copyMessage, setCopyMessage] = useState("");
+  const [aiPrepResult, setAIPrepResult] = useState("");
+  const [aiPrepStatus, setAIPrepStatus] = useState("");
+  const linkedResume = resumes.find((resume) => resume.id === application.resumeVersionId);
+
+  useEffect(() => {
+    setAnalysis(null);
+    setMatchResult(null);
+    setPrepPack(null);
+    setCopyMessage("");
+    setAIPrepResult("");
+    setAIPrepStatus("");
+  }, [application.id, application.jdText]);
+
+  async function handleCopyPrepPrompt(prompt: string) {
+    await copyText(prompt);
+    setCopyMessage("已复制面试准备 Prompt，可粘贴到 ChatGPT / DeepSeek / 豆包。");
+  }
+
+  async function handleGeneratePrepWithAI(prompt: string) {
+    if (!isAIConfigured(aiConfig)) {
+      setAIPrepStatus("请先在设置页配置 AI Provider，或继续使用复制 Prompt。");
+      return;
+    }
+
+    try {
+      setAIPrepStatus("AI 生成中...");
+      const result = await generateAICompletion({ prompt, config: aiConfig });
+      setAIPrepResult(result);
+      setAIPrepStatus("AI 生成完成。");
+    } catch (error) {
+      setAIPrepStatus(
+        error instanceof Error ? error.message : "AI 生成失败，请检查配置。",
+      );
+    }
+  }
+
+  return (
+    <section className="panel detail-card">
+      <div className="panel-header">
+        <div>
+          <h2>{application.companyName}</h2>
+          <p>{application.jobTitle}</p>
+        </div>
+        <div className="inline-actions">
+          <button onClick={() => onEdit(application)}>编辑</button>
+          <button className="danger" onClick={() => onDelete(application)}>
+            删除
+          </button>
+        </div>
+      </div>
+      <div className="detail-grid">
+        <span>渠道</span>
+        <strong>{application.channel || "未填写"}</strong>
+        <span>城市</span>
+        <strong>{application.city || "未填写"}</strong>
+        <span>薪资</span>
+        <strong>{application.salaryRange || "未填写"}</strong>
+        <span>投递日期</span>
+        <strong>{application.appliedAt || "未填写"}</strong>
+      </div>
+      <label>
+        快速更新状态
+        <select
+          value={application.status}
+          onChange={(event) =>
+            onStatusChange(application, event.target.value as JobStatus)
+          }
+        >
+          {[...activeStatuses, ...closedStatuses].map((status) => (
+            <option key={status} value={status}>
+              {statusLabels[status]}
+            </option>
+          ))}
+        </select>
+      </label>
+      <label>
+        关联简历版本
+        <select
+          value={application.resumeVersionId ?? ""}
+          onChange={(event) => {
+            setMatchResult(null);
+            onResumeLink(application, event.target.value);
+          }}
+        >
+          <option value="">暂不关联</option>
+          {resumes.map((resume) => (
+            <option key={resume.id} value={resume.id}>
+              {resume.name} · {resume.targetRole}
+            </option>
+          ))}
+        </select>
+      </label>
+      <div className="detail-section">
+        <div className="section-title-row">
+          <h3>JD 原文</h3>
+          <button
+            type="button"
+            className="secondary-action"
+            disabled={!application.jdText.trim()}
+            onClick={() => setAnalysis(analyzeJD(application.jdText))}
+          >
+            分析 JD
+          </button>
+        </div>
+        <p>{application.jdText || "暂未填写 JD。"}</p>
+      </div>
+      {analysis && <JDAnalysisCard analysis={analysis} />}
+      {linkedResume && (
+        <div className="match-actions">
+          <button
+            className="secondary-action"
+            type="button"
+            disabled={!application.jdText.trim()}
+            onClick={() => setMatchResult(matchResumeToJD(application, linkedResume))}
+          >
+            生成简历匹配建议
+          </button>
+          <span>当前关联：{linkedResume.name}</span>
+        </div>
+      )}
+      {matchResult && <ResumeMatchCard result={matchResult} />}
+      <div className="ai-panel">
+        <div className="section-title-row">
+          <div>
+            <h3>AI 面试准备</h3>
+            <p>零配置生成基础准备建议，也可复制完整 Prompt 到常用 AI。</p>
+          </div>
+          <button
+            type="button"
+            className="secondary-action"
+            disabled={!application.jdText.trim()}
+            onClick={() => setPrepPack(buildInterviewPrepPack(application, linkedResume))}
+          >
+            生成准备包
+          </button>
+        </div>
+        {prepPack ? (
+          <PromptPackCard
+            title="面试准备包"
+            prompt={prepPack.prompt}
+            copyLabel="复制 Prompt"
+            onCopy={() => handleCopyPrepPrompt(prepPack.prompt)}
+            onGenerateAI={() => handleGeneratePrepWithAI(prepPack.prompt)}
+            aiEnabled={isAIConfigured(aiConfig)}
+            aiStatus={aiPrepStatus}
+            aiText={aiPrepResult}
+            message={copyMessage}
+          >
+            <TextList title="重点准备" values={prepPack.focusAreas} />
+            <TextList title="可能被问" values={prepPack.likelyQuestions} />
+            <TextList title="项目素材" values={prepPack.projectStories} />
+            <TextList title="复习清单" values={prepPack.reviewChecklist} />
+          </PromptPackCard>
+        ) : (
+          <p className="empty">粘贴 JD 后可生成面试准备建议。关联简历后，Prompt 会自动带上简历卖点。</p>
+        )}
+      </div>
+      <div className="detail-section">
+        <h3>备注</h3>
+        <p>{application.notes || "暂未填写备注。"}</p>
+      </div>
+      <InterviewSection
+        application={application}
+        resume={linkedResume}
+        aiConfig={aiConfig}
+        interviews={interviews}
+        onInterviewCreate={onInterviewCreate}
+        onInterviewDelete={onInterviewDelete}
+      />
+    </section>
+  );
+}
