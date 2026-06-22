@@ -8,6 +8,13 @@ export type InterviewRound =
 
 export type InterviewResult = "pending" | "passed" | "failed" | "unknown";
 
+export type InterviewInviteStatus =
+  | "not_scheduled"
+  | "invited"
+  | "confirmed"
+  | "completed"
+  | "cancelled";
+
 export type InterviewQuestion = {
   id: string;
   question: string;
@@ -19,8 +26,14 @@ export type InterviewRecord = {
   id: string;
   jobApplicationId: string;
   round: InterviewRound;
+  inviteStatus?: InterviewInviteStatus;
+  invitedAt?: string;
   scheduledAt?: string;
+  confirmedAt?: string;
   interviewerType?: string;
+  nextRound?: InterviewRound;
+  nextScheduledAt?: string;
+  inviteNotes?: string;
   questions: InterviewQuestion[];
   selfReview?: string;
   weakPoints: string[];
@@ -51,3 +64,10 @@ export const interviewResultLabels: Record<InterviewResult, string> = {
   unknown: "未知",
 };
 
+export const interviewInviteStatusLabels: Record<InterviewInviteStatus, string> = {
+  not_scheduled: "未预约",
+  invited: "已邀约",
+  confirmed: "已确认",
+  completed: "已结束",
+  cancelled: "已取消",
+};

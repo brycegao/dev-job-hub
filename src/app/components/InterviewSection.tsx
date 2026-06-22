@@ -2,8 +2,10 @@ import { useState, type FormEvent } from "react";
 import type { AIProviderConfig } from "../../features/ai-assist/types";
 import type { JobApplication } from "../../features/applications/types";
 import {
+  interviewInviteStatusLabels,
   interviewResultLabels,
   interviewRoundLabels,
+  type InterviewInviteStatus,
   type InterviewQuestion,
   type InterviewRecord,
   type InterviewRecordInput,
@@ -20,6 +22,7 @@ export function InterviewSection({
   interviews,
   onInterviewCreate,
   onInterviewDelete,
+  onInterviewUpdate,
 }: {
   application: JobApplication;
   resume?: ResumeVersion;
@@ -27,10 +30,15 @@ export function InterviewSection({
   interviews: InterviewRecord[];
   onInterviewCreate: (input: InterviewRecordInput) => void;
   onInterviewDelete: (interview: InterviewRecord) => void;
+  onInterviewUpdate: (interview: InterviewRecord) => void;
 }) {
   const [round, setRound] = useState<InterviewRound>("first");
+  const [inviteStatus, setInviteStatus] = useState<InterviewInviteStatus>("invited");
+  const [invitedAt, setInvitedAt] = useState(new Date().toISOString().slice(0, 16));
   const [scheduledAt, setScheduledAt] = useState("");
+  const [confirmedAt, setConfirmedAt] = useState("");
   const [interviewerType, setInterviewerType] = useState("");
+  const [inviteNotes, setInviteNotes] = useState("");
   const [questionsText, setQuestionsText] = useState("");
   const [tagsText, setTagsText] = useState("项目经历\n架构设计");
   const [weakPointsText, setWeakPointsText] = useState("");
@@ -40,8 +48,12 @@ export function InterviewSection({
 
   function resetForm() {
     setRound("first");
+    setInviteStatus("invited");
+    setInvitedAt(new Date().toISOString().slice(0, 16));
     setScheduledAt("");
+    setConfirmedAt("");
     setInterviewerType("");
+    setInviteNotes("");
     setQuestionsText("");
     setTagsText("项目经历\n架构设计");
     setWeakPointsText("");
@@ -68,8 +80,12 @@ export function InterviewSection({
     onInterviewCreate({
       jobApplicationId: application.id,
       round,
+      inviteStatus,
+      invitedAt,
       scheduledAt,
+      confirmedAt,
       interviewerType,
+      inviteNotes,
       questions,
       selfReview,
       weakPoints: parseLines(weakPointsText),
@@ -88,6 +104,21 @@ export function InterviewSection({
       <form className="interview-form" onSubmit={handleSubmit}>
         <div className="form-grid">
           <label>
+            邀约状态
+            <select
+              value={inviteStatus}
+              onChange={(event) =>
+                setInviteStatus(event.target.value as InterviewInviteStatus)
+              }
+            >
+              {Object.entries(interviewInviteStatusLabels).map(([value, label]) => (
+                <option key={value} value={value}>
+                  {label}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label>
             轮次
             <select
               value={round}
@@ -101,11 +132,30 @@ export function InterviewSection({
             </select>
           </label>
           <label>
+            HR 通知时间
+            <input
+              type="datetime-local"
+              value={invitedAt}
+              onInput={(event) => setInvitedAt(event.currentTarget.value)}
+              onChange={(event) => setInvitedAt(event.target.value)}
+            />
+          </label>
+          <label>
             面试时间
             <input
-              type="date"
+              type="datetime-local"
               value={scheduledAt}
+              onInput={(event) => setScheduledAt(event.currentTarget.value)}
               onChange={(event) => setScheduledAt(event.target.value)}
+            />
+          </label>
+          <label>
+            确认时间
+            <input
+              type="datetime-local"
+              value={confirmedAt}
+              onInput={(event) => setConfirmedAt(event.currentTarget.value)}
+              onChange={(event) => setConfirmedAt(event.target.value)}
             />
           </label>
           <label>
@@ -116,6 +166,16 @@ export function InterviewSection({
               placeholder="技术负责人 / HR / 业务面"
             />
           </label>
+        </div>
+        <label>
+          邀约备注
+          <input
+            value={inviteNotes}
+            onChange={(event) => setInviteNotes(event.target.value)}
+            placeholder="例如：HR 电话通知，下一轮技术负责人面，需提前准备作品集"
+          />
+        </label>
+        <div className="form-grid">
           <label>
             结果
             <select
@@ -189,6 +249,7 @@ export function InterviewSection({
             resume={resume}
             aiConfig={aiConfig}
             onDelete={onInterviewDelete}
+            onUpdate={onInterviewUpdate}
           />
         ))}
       </div>

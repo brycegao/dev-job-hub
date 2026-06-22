@@ -1,7 +1,5 @@
 export type JobStatus =
-  | "evaluating"
   | "applied"
-  | "contacted"
   | "interviewing"
   | "offer"
   | "rejected"
@@ -35,9 +33,7 @@ export type JobApplicationInput = Omit<
 >;
 
 export const statusLabels: Record<JobStatus, string> = {
-  evaluating: "待评估",
   applied: "已投递",
-  contacted: "已沟通",
   interviewing: "面试中",
   offer: "Offer",
   rejected: "已拒绝",
@@ -46,11 +42,21 @@ export const statusLabels: Record<JobStatus, string> = {
 };
 
 export const activeStatuses: JobStatus[] = [
-  "evaluating",
   "applied",
-  "contacted",
   "interviewing",
   "offer",
 ];
 
 export const closedStatuses: JobStatus[] = ["rejected", "no_response", "not_fit"];
+
+/**
+ * 状态流转规则：每个状态允许转到的目标状态。
+ */
+export const statusTransitions: Record<JobStatus, JobStatus[]> = {
+  applied: ["interviewing", "offer", "rejected", "no_response", "not_fit"],
+  interviewing: ["offer", "rejected"],
+  offer: [],
+  rejected: [],
+  no_response: [],
+  not_fit: [],
+};

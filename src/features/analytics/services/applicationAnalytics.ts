@@ -1,4 +1,5 @@
 import type { JobApplication, JobStatus } from "../../applications/types";
+import type { InterviewRecord } from "../../interviews/types";
 
 export type ApplicationMetrics = {
   total: number;
@@ -23,6 +24,7 @@ function startOfWeek(date: Date): Date {
 
 export function buildApplicationMetrics(
   applications: JobApplication[],
+  interviewRecords: InterviewRecord[] = [],
 ): ApplicationMetrics {
   const weekStart = startOfWeek(new Date());
   const statusCounts = applications.reduce(
@@ -43,9 +45,15 @@ export function buildApplicationMetrics(
   );
 
   const replies = applications.filter((application) =>
-    ["contacted", "interviewing", "offer", "rejected"].includes(application.status),
+    ["interviewing", "offer", "rejected"].includes(application.status),
   ).length;
-  const interviews = applications.filter((application) =>
+  const applicationIdsWithInterviews = new Set(
+    interviewRecords
+      .filter((record) => record.inviteStatus !== "cancelled")
+      .map((record) => record.jobApplicationId),
+  );
+  const interviewCount = applications.filter((application) =>
+    applicationIdsWithInterviews.has(application.id) ||
     ["interviewing", "offer", "rejected"].includes(application.status),
   ).length;
   const offers = applications.filter((application) => application.status === "offer").length;
@@ -64,10 +72,10 @@ export function buildApplicationMetrics(
     total: applications.length,
     thisWeek,
     replies,
-    interviews,
+    interviews: interviewCount,
     offers,
     replyRate: applications.length ? replies / applications.length : 0,
-    interviewRate: replies ? interviews / replies : 0,
+    interviewRate: replies ? interviewCount / replies : 0,
     statusCounts,
     channelCounts,
     followUps,

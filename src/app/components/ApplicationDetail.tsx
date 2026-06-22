@@ -11,9 +11,8 @@ import type {
   InterviewPrepPack,
 } from "../../features/ai-assist/types";
 import {
-  activeStatuses,
-  closedStatuses,
   statusLabels,
+  statusTransitions,
   type JobApplication,
   type JobStatus,
 } from "../../features/applications/types";
@@ -46,6 +45,7 @@ export function ApplicationDetail({
   onResumeLink,
   onInterviewCreate,
   onInterviewDelete,
+  onInterviewUpdate,
 }: {
   application: JobApplication;
   resumes: ResumeVersion[];
@@ -57,6 +57,7 @@ export function ApplicationDetail({
   onResumeLink: (application: JobApplication, resumeVersionId: string) => void;
   onInterviewCreate: (input: InterviewRecordInput) => void;
   onInterviewDelete: (interview: InterviewRecord) => void;
+  onInterviewUpdate: (interview: InterviewRecord) => void;
 }) {
   const [analysis, setAnalysis] = useState<JDAnalysisResult | null>(null);
   const [matchResult, setMatchResult] = useState<ResumeMatchResult | null>(null);
@@ -130,7 +131,7 @@ export function ApplicationDetail({
             onStatusChange(application, event.target.value as JobStatus)
           }
         >
-          {[...activeStatuses, ...closedStatuses].map((status) => (
+          {[application.status, ...statusTransitions[application.status]].map((status) => (
             <option key={status} value={status}>
               {statusLabels[status]}
             </option>
@@ -230,6 +231,7 @@ export function ApplicationDetail({
         interviews={interviews}
         onInterviewCreate={onInterviewCreate}
         onInterviewDelete={onInterviewDelete}
+        onInterviewUpdate={onInterviewUpdate}
       />
     </section>
   );

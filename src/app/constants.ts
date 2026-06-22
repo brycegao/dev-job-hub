@@ -29,7 +29,7 @@ export const defaultInput: JobApplicationInput = {
   salaryRange: "",
   jobUrl: "",
   jdText: "",
-  status: "evaluating",
+  status: "applied",
   appliedAt: new Date().toISOString().slice(0, 10),
   nextFollowUpAt: "",
   notes: "",

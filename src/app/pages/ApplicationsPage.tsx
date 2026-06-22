@@ -20,6 +20,7 @@ export function ApplicationsPage({
   filterStatus,
   input,
   isEditing,
+  formVisible,
   resumes,
   interviews,
   aiConfig,
@@ -34,6 +35,7 @@ export function ApplicationsPage({
   onResumeLink,
   onInterviewCreate,
   onInterviewDelete,
+  onInterviewUpdate,
 }: {
   isLoading: boolean;
   filteredApplications: JobApplication[];
@@ -41,6 +43,7 @@ export function ApplicationsPage({
   filterStatus: JobStatus | "all";
   input: JobApplicationInput;
   isEditing: boolean;
+  formVisible: boolean;
   resumes: ResumeVersion[];
   interviews: InterviewRecord[];
   aiConfig: AIProviderConfig;
@@ -55,10 +58,13 @@ export function ApplicationsPage({
   onResumeLink: (application: JobApplication, resumeVersionId: string) => void;
   onInterviewCreate: (input: InterviewRecordInput) => void;
   onInterviewDelete: (interview: InterviewRecord) => void;
+  onInterviewUpdate: (interview: InterviewRecord) => void;
 }) {
   const selectedApplication = filteredApplications.find(
     (application) => application.id === selectedId,
   );
+
+  const showForm = formVisible;
 
   return (
     <section className="workspace">
@@ -102,15 +108,15 @@ export function ApplicationsPage({
       </div>
 
       <div className="detail-pane">
-        <ApplicationForm
-          input={input}
-          isEditing={isEditing}
-          onInputChange={onInputChange}
-          onSubmit={onSubmit}
-          onCancel={onCancelEdit}
-        />
-
-        {selectedApplication && (
+        {showForm ? (
+          <ApplicationForm
+            input={input}
+            isEditing={isEditing}
+            onInputChange={onInputChange}
+            onSubmit={onSubmit}
+            onCancel={onCancelEdit}
+          />
+        ) : selectedApplication ? (
           <ApplicationDetail
             application={selectedApplication}
             resumes={resumes}
@@ -124,7 +130,10 @@ export function ApplicationsPage({
             onResumeLink={onResumeLink}
             onInterviewCreate={onInterviewCreate}
             onInterviewDelete={onInterviewDelete}
+            onInterviewUpdate={onInterviewUpdate}
           />
+        ) : (
+          <p className="empty">选择左侧岗位查看详情，或点击「新增岗位」创建。</p>
         )}
       </div>
     </section>

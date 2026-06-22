@@ -10,12 +10,14 @@ export function InterviewsPage({
   resumes,
   aiConfig,
   onDelete,
+  onUpdate,
 }: {
   interviews: InterviewRecord[];
   applications: JobApplication[];
   resumes: ResumeVersion[];
   aiConfig: AIProviderConfig;
   onDelete: (interview: InterviewRecord) => void;
+  onUpdate: (interview: InterviewRecord) => void;
 }) {
   return (
     <section className="panel">
@@ -40,6 +42,7 @@ export function InterviewsPage({
                 )}
                 aiConfig={aiConfig}
                 onDelete={onDelete}
+                onUpdate={onUpdate}
               />
             );
           })}

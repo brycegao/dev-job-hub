@@ -37,7 +37,7 @@ export const sampleData: AppDataExport = {
       jobUrl: "https://example.com/jobs/android",
       jdText:
         "负责金融交易 Android App，要求 Kotlin、Java、WebSocket、行情、性能优化、稳定性治理、模块化架构，有金融或交易业务经验优先。",
-      status: "contacted",
+      status: "interviewing",
       appliedAt: "2026-06-21",
       nextFollowUpAt: "2026-06-24",
       resumeVersionId: "sample-resume-2",
@@ -83,8 +83,14 @@ export const sampleData: AppDataExport = {
       id: "sample-interview-1",
       jobApplicationId: "sample-app-1",
       round: "first",
+      inviteStatus: "confirmed",
+      invitedAt: "2026-06-22",
       scheduledAt: "2026-06-23",
+      confirmedAt: "2026-06-22",
       interviewerType: "技术负责人",
+      nextRound: "second",
+      nextScheduledAt: "2026-06-26",
+      inviteNotes: "HR 通知一面通过，二面关注 Flutter 工程化和 Google Play 合规细节。",
       questions: [
         {
           id: "sample-question-1",
@@ -108,4 +114,3 @@ export const sampleData: AppDataExport = {
     },
   ],
 };
-

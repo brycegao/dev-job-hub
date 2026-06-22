@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { generateAICompletion } from "../../features/ai-assist/services/aiCompletionService";
 import {
   isAIConfigured,
@@ -12,9 +12,12 @@ import type {
 } from "../../features/ai-assist/types";
 import type { JobApplication } from "../../features/applications/types";
 import {
+  interviewInviteStatusLabels,
   interviewResultLabels,
   interviewRoundLabels,
+  type InterviewInviteStatus,
   type InterviewRecord,
+  type InterviewRound,
 } from "../../features/interviews/types";
 import type { ResumeVersion } from "../../features/resumes/types";
 import { copyText } from "../constants";
@@ -28,17 +31,45 @@ export function InterviewRecordCard({
   resume,
   aiConfig,
   onDelete,
+  onUpdate,
 }: {
   interview: InterviewRecord;
   application?: JobApplication;
   resume?: ResumeVersion;
   aiConfig: AIProviderConfig;
   onDelete: (interview: InterviewRecord) => void;
+  onUpdate: (interview: InterviewRecord) => void;
 }) {
   const [answerPack, setAnswerPack] = useState<InterviewAnswerPack | null>(null);
   const [copyMessage, setCopyMessage] = useState("");
   const [aiAnswerResult, setAIAnswerResult] = useState("");
   const [aiAnswerStatus, setAIAnswerStatus] = useState("");
+  const [inviteStatus, setInviteStatus] = useState<InterviewInviteStatus>(
+    interview.inviteStatus ?? "not_scheduled",
+  );
+  const [scheduledAt, setScheduledAt] = useState(interview.scheduledAt ?? "");
+  const [confirmedAt, setConfirmedAt] = useState(interview.confirmedAt ?? "");
+  const [nextRound, setNextRound] = useState<InterviewRound>(
+    interview.nextRound ?? "second",
+  );
+  const [nextScheduledAt, setNextScheduledAt] = useState(interview.nextScheduledAt ?? "");
+  const [inviteNotes, setInviteNotes] = useState(interview.inviteNotes ?? "");
+
+  useEffect(() => {
+    setInviteStatus(interview.inviteStatus ?? "not_scheduled");
+    setScheduledAt(interview.scheduledAt ?? "");
+    setConfirmedAt(interview.confirmedAt ?? "");
+    setNextRound(interview.nextRound ?? "second");
+    setNextScheduledAt(interview.nextScheduledAt ?? "");
+    setInviteNotes(interview.inviteNotes ?? "");
+  }, [
+    interview.inviteStatus,
+    interview.scheduledAt,
+    interview.confirmedAt,
+    interview.nextRound,
+    interview.nextScheduledAt,
+    interview.inviteNotes,
+  ]);
 
   async function handleCopyAnswerPrompt(prompt: string) {
     await copyText(prompt);
@@ -63,6 +94,18 @@ export function InterviewRecordCard({
     }
   }
 
+  function handleInviteUpdate() {
+    onUpdate({
+      ...interview,
+      inviteStatus,
+      scheduledAt,
+      confirmedAt,
+      nextRound,
+      nextScheduledAt,
+      inviteNotes,
+    });
+  }
+
   return (
     <article className="interview-card">
       <div className="interview-card-header">
@@ -77,10 +120,91 @@ export function InterviewRecordCard({
       <div className="detail-grid compact">
         <span>时间</span>
         <strong>{interview.scheduledAt || "未填写"}</strong>
+        <span>邀约</span>
+        <strong>{interviewInviteStatusLabels[interview.inviteStatus ?? "not_scheduled"]}</strong>
         <span>面试官</span>
         <strong>{interview.interviewerType || "未填写"}</strong>
         <span>结果</span>
         <strong>{interviewResultLabels[interview.result]}</strong>
+        <span>下一轮</span>
+        <strong>
+          {interview.nextRound
+            ? `${interviewRoundLabels[interview.nextRound]} · ${interview.nextScheduledAt || "时间未定"}`
+            : "未安排"}
+        </strong>
+      </div>
+      <div className="invite-update-panel">
+        <div className="section-title-row">
+          <h3>面试邀约</h3>
+          <button className="secondary-action" type="button" onClick={handleInviteUpdate}>
+            更新邀约
+          </button>
+        </div>
+        <div className="form-grid">
+          <label>
+            邀约状态
+            <select
+              value={inviteStatus}
+              onChange={(event) =>
+                setInviteStatus(event.target.value as InterviewInviteStatus)
+              }
+            >
+              {Object.entries(interviewInviteStatusLabels).map(([value, label]) => (
+                <option key={value} value={value}>
+                  {label}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label>
+            本轮面试时间
+            <input
+              type="date"
+              value={scheduledAt}
+              onInput={(event) => setScheduledAt(event.currentTarget.value)}
+              onChange={(event) => setScheduledAt(event.target.value)}
+            />
+          </label>
+          <label>
+            确认时间
+            <input
+              type="date"
+              value={confirmedAt}
+              onInput={(event) => setConfirmedAt(event.currentTarget.value)}
+              onChange={(event) => setConfirmedAt(event.target.value)}
+            />
+          </label>
+          <label>
+            下一轮
+            <select
+              value={nextRound}
+              onChange={(event) => setNextRound(event.target.value as InterviewRound)}
+            >
+              {Object.entries(interviewRoundLabels).map(([value, label]) => (
+                <option key={value} value={value}>
+                  {label}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label>
+            下一轮时间
+            <input
+              type="date"
+              value={nextScheduledAt}
+              onInput={(event) => setNextScheduledAt(event.currentTarget.value)}
+              onChange={(event) => setNextScheduledAt(event.target.value)}
+            />
+          </label>
+        </div>
+        <label>
+          邀约备注
+          <input
+            value={inviteNotes}
+            onChange={(event) => setInviteNotes(event.target.value)}
+            placeholder="例如：HR 通知二面，需准备 Google Play 合规案例"
+          />
+        </label>
       </div>
       {interview.summary && <p className="interview-summary">{interview.summary}</p>}
       <TextList

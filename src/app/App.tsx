@@ -80,8 +80,8 @@ export function App() {
   }, []);
 
   const metrics = useMemo(
-    () => buildApplicationMetrics(appData.applications),
-    [appData.applications],
+    () => buildApplicationMetrics(appData.applications, interviewData.interviews),
+    [appData.applications, interviewData.interviews],
   );
 
   return (
@@ -115,11 +115,7 @@ export function App() {
           </div>
           <button
             className="primary"
-            onClick={() => {
-              setPage("applications");
-              appData.setInput(defaultInput);
-              appData.setIsEditing(false);
-            }}
+            onClick={() => appData.showCreateForm()}
           >
             新增岗位
           </button>
@@ -143,23 +139,25 @@ export function App() {
             filterStatus={appData.filterStatus}
             input={appData.input}
             isEditing={appData.isEditing}
+            formVisible={appData.formVisible}
             resumes={resumeData.resumes}
             interviews={interviewData.interviews}
             aiConfig={settings.aiConfig}
             onFilterChange={appData.setFilterStatus}
-            onSelectApplication={appData.setSelectedId}
+            onSelectApplication={(id) => {
+              appData.setSelectedId(id);
+              appData.hideForm();
+            }}
             onInputChange={appData.setInput}
             onSubmit={appData.handleSubmit}
-            onCancelEdit={() => {
-              appData.setInput(defaultInput);
-              appData.setIsEditing(false);
-            }}
+            onCancelEdit={() => appData.hideForm()}
             onEdit={appData.startEdit}
             onDelete={appData.handleDelete}
             onStatusChange={appData.handleStatusChange}
             onResumeLink={appData.handleApplicationResumeLink}
             onInterviewCreate={interviewData.handleInterviewCreate}
             onInterviewDelete={interviewData.handleInterviewDelete}
+            onInterviewUpdate={interviewData.handleInterviewUpdate}
           />
         )}
 
@@ -188,6 +186,7 @@ export function App() {
             resumes={resumeData.resumes}
             aiConfig={settings.aiConfig}
             onDelete={interviewData.handleInterviewDelete}
+            onUpdate={interviewData.handleInterviewUpdate}
           />
         )}
 

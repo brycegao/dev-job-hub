@@ -102,12 +102,25 @@ type InterviewRound =
   | "final"
   | "other";
 
+type InterviewInviteStatus =
+  | "not_scheduled"
+  | "invited"
+  | "confirmed"
+  | "completed"
+  | "cancelled";
+
 type InterviewRecord = {
   id: string;
   jobApplicationId: string;
   round: InterviewRound;
+  inviteStatus?: InterviewInviteStatus;
+  invitedAt?: string;
   scheduledAt?: string;
+  confirmedAt?: string;
   interviewerType?: string;
+  nextRound?: InterviewRound;
+  nextScheduledAt?: string;
+  inviteNotes?: string;
   questions: InterviewQuestion[];
   selfReview?: string;
   weakPoints: string[];
@@ -144,4 +157,3 @@ type WeeklyReview = {
   createdAt: string;
 };
 ```
-

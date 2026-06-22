@@ -41,7 +41,7 @@ export function HelpPage() {
             <span>5</span>
             <div>
               <strong>复盘面试</strong>
-              <p>每轮面试后记录问题、标签、薄弱点、自我复盘和结果。之后可以生成参考答案 Prompt，持续改进表达。</p>
+              <p>每轮面试后记录问题、标签、薄弱点、自我复盘和结果。HR 通知下一轮时，可在原记录里更新邀约状态、下一轮轮次和预约时间。</p>
             </div>
           </article>
         </div>
@@ -87,6 +87,8 @@ export function HelpPage() {
           <span>生成准备包</span>
           <i>→</i>
           <span>面试复盘</span>
+          <i>→</i>
+          <span>更新邀约</span>
           <i>→</i>
           <span>调整简历</span>
         </div>

@@ -27,6 +27,19 @@ export function useApplicationData({
   const [filterStatus, setFilterStatus] = useState<JobStatus | "all">("all");
   const [input, setInput] = useState<JobApplicationInput>(defaultInput);
   const [isEditing, setIsEditing] = useState(false);
+  const [formVisible, setFormVisible] = useState(false);
+
+  function showCreateForm() {
+    setInput(defaultInput);
+    setIsEditing(false);
+    setFormVisible(true);
+    setPage("applications");
+  }
+
+  function hideForm() {
+    setFormVisible(false);
+    setIsEditing(false);
+  }
 
   function setApplicationsFromRefresh(data: JobApplication[]) {
     setApplications(data);
@@ -62,7 +75,7 @@ export function useApplicationData({
     }
 
     setInput(defaultInput);
-    setIsEditing(false);
+    hideForm();
     await refresh();
   }
 
@@ -84,6 +97,7 @@ export function useApplicationData({
       notes: application.notes,
     });
     setIsEditing(true);
+    setFormVisible(true);
     setPage("applications");
   }
 
@@ -120,7 +134,9 @@ export function useApplicationData({
     input,
     setInput,
     isEditing,
-    setIsEditing,
+    formVisible,
+    showCreateForm,
+    hideForm,
     filteredApplications,
     setApplicationsFromRefresh,
     handleSubmit,

@@ -2,6 +2,7 @@ import { useState } from "react";
 import {
   createInterview,
   deleteInterview,
+  updateInterview,
 } from "../../features/interviews/services/interviewService";
 import type { InterviewRecord, InterviewRecordInput } from "../../features/interviews/types";
 
@@ -26,10 +27,16 @@ export function useInterviewData({
     await refresh();
   }
 
+  async function handleInterviewUpdate(interview: InterviewRecord) {
+    await updateInterview(interview);
+    await refresh();
+  }
+
   return {
     interviews,
     setInterviewsFromRefresh,
     handleInterviewCreate,
     handleInterviewDelete,
+    handleInterviewUpdate,
   };
 }
