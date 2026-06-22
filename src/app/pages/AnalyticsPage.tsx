@@ -3,6 +3,13 @@ import { MetricCard } from "../components/MetricCard";
 import { TextList } from "../components/TextList";
 import { formatPercent } from "../constants";
 
+const FUNNEL_STEPS = [
+  { key: "total", label: "投递" },
+  { key: "replies", label: "回复" },
+  { key: "interviews", label: "面试" },
+  { key: "offers", label: "Offer" },
+] as const;
+
 export function AnalyticsPage({
   metrics,
 }: {
@@ -15,6 +22,37 @@ export function AnalyticsPage({
       <MetricCard label="回复到面试" value={formatPercent(metrics.interviewRate)} />
       <MetricCard label="本周投递" value={metrics.thisWeek} />
       <MetricCard label="Offer 数" value={metrics.offers} />
+
+      <section className="panel wide">
+        <div className="panel-header">
+          <h2>投递漏斗</h2>
+        </div>
+        <div className="funnel">
+          {FUNNEL_STEPS.map((step, index) => {
+            const count = metrics[step.key];
+            const width = metrics.total > 0 ? (count / metrics.total) * 100 : 0;
+            const rate = index > 0 && metrics[FUNNEL_STEPS[index - 1].key] > 0
+              ? count / metrics[FUNNEL_STEPS[index - 1].key]
+              : 0;
+            return (
+              <div key={step.key} className="funnel-step">
+                <div className="funnel-label">
+                  <span>{step.label}</span>
+                  <strong>{count}</strong>
+                  {index > 0 && (
+                    <small className="funnel-rate">
+                      转化 {formatPercent(rate)}
+                    </small>
+                  )}
+                </div>
+                <div className="funnel-bar-track">
+                  <i style={{ width: `${Math.max(width, 2)}%` }} />
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </section>
 
       {metrics.followUps.length > 0 && (
         <section className="panel wide">

@@ -19,11 +19,17 @@ import { HelpPage } from "./pages/HelpPage";
 import { InterviewsPage } from "./pages/InterviewsPage";
 import { ResumesPage } from "./pages/ResumesPage";
 import { SettingsPage } from "./pages/SettingsPage";
+import {
+  checkAndNotify,
+  getNotificationPermission,
+  requestNotificationPermission,
+} from "../shared/services/notificationService";
 
 export function App() {
   const [page, setPage] = useState<Page>("dashboard");
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState("");
+  const [notifyPermission, setNotifyPermission] = useState(getNotificationPermission());
   type RefreshFn = (nextSelection?: { applicationId?: string | null; resumeId?: string | null }) => Promise<void>;
   const refreshRef = useRef<RefreshFn>(undefined);
 
@@ -91,10 +97,22 @@ export function App() {
 
   refreshRef.current = refresh;
 
+  /** 首次加载数据后检查并发送浏览器通知 */
   useEffect(() => {
     void refresh();
     settings.initAIConfig();
   }, []);
+
+  useEffect(() => {
+    if (appData.applications.length === 0 || notifyPermission !== "granted") return;
+    const applicationMap = new Map(appData.applications.map((a) => [a.id, a]));
+    checkAndNotify(interviewData.interviews, appData.applications, applicationMap);
+  }, [appData.applications.length, notifyPermission]);
+
+  async function handleEnableNotify() {
+    const granted = await requestNotificationPermission();
+    setNotifyPermission(granted ? "granted" : "denied");
+  }
 
   const metrics = useMemo(
     () => buildApplicationMetrics(appData.applications, interviewData.interviews),
@@ -153,6 +171,11 @@ export function App() {
           >
             新增岗位
           </button>
+          {notifyPermission !== "granted" && (
+            <button className="secondary-action" onClick={handleEnableNotify}>
+              🔔 开启提醒
+            </button>
+          )}
         </header>
         {errorMessage && (
           <div className="error-banner" role="alert">
