@@ -108,7 +108,7 @@ export function ApplicationDetail({
           <>
             <span>岗位链接</span>
             <strong>
-              <a href={application.jobUrl} target="_blank" rel="noreferrer">{application.jobUrl}</a>
+              <a href={application.jobUrl} target="_blank" rel="noreferrer noopener">{application.jobUrl}</a>
             </strong>
           </>
         )}

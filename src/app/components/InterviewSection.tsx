@@ -327,13 +327,13 @@ export function InterviewSection({
           </div>
           <label>
             面试问题
+            <textarea
+              value={questionsText}
+              onChange={(event) => setQuestionsText(event.target.value)}
+              placeholder="每行一个问题，例如：你如何做 Flutter 多语言？"
+              rows={4}
+            />
           </label>
-          <textarea
-            value={questionsText}
-            onChange={(event) => setQuestionsText(event.target.value)}
-            placeholder="每行一个问题，例如：你如何做 Flutter 多语言？"
-            rows={4}
-          />
           <label>
             问题标签
             <textarea

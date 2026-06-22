@@ -139,7 +139,7 @@ export function App() {
 
   return (
     <div className="app-shell">
-      <aside className="sidebar">
+      <aside className="sidebar" aria-label="侧边导航">
         <div className="brand">
           <span className="brand-mark">J</span>
           <div>
@@ -147,11 +147,12 @@ export function App() {
             <small>Developer Job CRM</small>
           </div>
         </div>
-        <nav className="nav">
+        <nav className="nav" aria-label="主导航">
           {navItems.map((item) => (
             <button
               key={item.key}
               className={page === item.key ? "active" : ""}
+              aria-current={page === item.key ? "page" : undefined}
               onClick={() => setPage(item.key)}
             >
               {item.label}
@@ -181,7 +182,7 @@ export function App() {
         {errorMessage && (
           <div className="error-banner" role="alert">
             <span>{errorMessage}</span>
-            <button onClick={() => setErrorMessage("")}>×</button>
+            <button onClick={() => setErrorMessage("")} aria-label="关闭错误提示">×</button>
           </div>
         )}
 

@@ -98,10 +98,12 @@ export function ApplicationsPage({
           <input
             className="search-input"
             placeholder="搜索公司 / 岗位 / JD..."
+            aria-label="搜索岗位"
             value={searchText}
             onChange={(e) => setSearchText(e.target.value)}
           />
           <select
+            aria-label="按状态筛选"
             value={filterStatus}
             onChange={(event) =>
               onFilterChange(event.target.value as JobStatus | "all")

@@ -29,6 +29,15 @@ button {
   cursor: pointer;
 }
 
+/* 全局 focus-visible 指示器 */
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+button:focus-visible {
+  outline: 2px solid #0f766e;
+  outline-offset: 2px;
+}
+
 .app-shell {
   display: grid;
   grid-template-columns: 248px minmax(0, 1fr);

@@ -79,6 +79,7 @@ export function InterviewsPage({
         <input
           className="search-input"
           placeholder="搜索公司 / 问题 / 备注..."
+          aria-label="搜索面试"
           value={searchText}
           onChange={(e) => setSearchText(e.target.value)}
         />
