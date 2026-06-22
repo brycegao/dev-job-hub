@@ -7,9 +7,11 @@ export function SettingsPage({
   resumesCount,
   interviewsCount,
   message,
+  lastExportTime,
   onExport,
   onImport,
   onLoadSample,
+  onClearAll,
   aiConfig,
   onAIConfigSave,
 }: {
@@ -17,9 +19,11 @@ export function SettingsPage({
   resumesCount: number;
   interviewsCount: number;
   message: string;
+  lastExportTime: string | null;
   onExport: () => void;
   onImport: (file: File | null) => void;
   onLoadSample: () => void;
+  onClearAll: () => void;
   aiConfig: AIProviderConfig;
   onAIConfigSave: (config: AIProviderConfig) => void;
 }) {
@@ -30,17 +34,52 @@ export function SettingsPage({
     setDraftAIConfig(aiConfig);
   }, [aiConfig]);
 
+  const hasData = applicationsCount > 0 || resumesCount > 0 || interviewsCount > 0;
+
+  /** 计算距离上次导出的天数 */
+  function daysSinceLastExport(): number | null {
+    if (!lastExportTime) return null;
+    const diff = Date.now() - new Date(lastExportTime).getTime();
+    return Math.floor(diff / (1000 * 60 * 60 * 24));
+  }
+
+  const daysSince = daysSinceLastExport();
+  const showExportWarning = hasData && (!lastExportTime || daysSince === null || daysSince >= 7);
+
   return (
     <section className="page-grid">
       <MetricCard label="岗位记录" value={applicationsCount} />
       <MetricCard label="简历版本" value={resumesCount} />
       <MetricCard label="面试记录" value={interviewsCount} />
 
+      {/* 数据安全提醒 */}
+      {showExportWarning && (
+        <section className="panel wide backup-warning">
+          <div className="backup-warning-content">
+            <strong>{lastExportTime ? "⚠️ 距离上次导出已超过 7 天，建议立即备份" : "⚠️ 你还没有导出过数据"}</strong>
+            <p>
+              所有数据保存在浏览器本地，清理浏览器数据或更换设备会导致数据丢失。
+              {lastExportTime && (
+                <> 上次导出时间：<strong>{new Date(lastExportTime).toLocaleDateString("zh-CN")}</strong></>
+              )}
+            </p>
+            <button className="primary" onClick={onExport}>
+              立即导出备份
+            </button>
+          </div>
+        </section>
+      )}
+
       <section className="panel wide">
         <div className="panel-header">
           <div>
             <h2>数据导入导出</h2>
-            <p>所有数据默认保存在本机浏览器 IndexedDB，可导出 JSON 备份。</p>
+            <p>
+              所有数据默认保存在本机浏览器 IndexedDB，可导出 JSON 备份。
+              {lastExportTime && !showExportWarning && (
+                <> 上次导出：<strong>{new Date(lastExportTime).toLocaleDateString("zh-CN")}</strong></>
+              )}
+            </p>
           </div>
         </div>
         <div className="settings-actions">
@@ -76,6 +115,13 @@ export function SettingsPage({
             <li>卸载浏览器或清理站点数据可能导致本地记录丢失。</li>
           </ul>
         </div>
+        {hasData && (
+          <div className="clear-data-section">
+            <button className="danger-lite" type="button" onClick={onClearAll}>
+              清除所有数据
+            </button>
+          </div>
+        )}
       </section>
 
       <section className="panel wide">

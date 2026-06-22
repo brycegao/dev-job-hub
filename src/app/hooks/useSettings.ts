@@ -1,8 +1,8 @@
 /**
  * 设置页数据管理 Hook。
- * 管理数据导入导出、示例数据加载和 AI 配置。
+ * 管理数据导入导出、示例数据加载、AI 配置和数据安全提醒。
  */
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   defaultAIConfig,
   isAIConfigured,
@@ -21,6 +21,26 @@ import type { InterviewRecord } from "../../features/interviews/types";
 import type { ResumeVersion } from "../../features/resumes/types";
 import { sampleData } from "../../data/sampleData";
 
+const LAST_EXPORT_KEY = "developer-job-hunt-crm.last-export";
+
+/** 读取上次导出时间（ISO 字符串或 null） */
+function loadLastExportTime(): string | null {
+  try {
+    return localStorage.getItem(LAST_EXPORT_KEY);
+  } catch {
+    return null;
+  }
+}
+
+/** 保存当前导出时间 */
+function saveLastExportTime(): void {
+  try {
+    localStorage.setItem(LAST_EXPORT_KEY, new Date().toISOString());
+  } catch {
+    // localStorage 不可用时静默失败
+  }
+}
+
 export function useSettings({
   applications,
   resumes,
@@ -37,16 +57,24 @@ export function useSettings({
 }) {
   const [settingsMessage, setSettingsMessage] = useState("");
   const [aiConfig, setAIConfig] = useState<AIProviderConfig>(defaultAIConfig);
+  const [lastExportTime, setLastExportTime] = useState<string | null>(loadLastExportTime);
 
   /** 从 localStorage 初始化 AI 配置 */
   function initAIConfig() {
     setAIConfig(loadAIConfig());
   }
 
+  /** 每次组件渲染时同步 lastExportTime（跨标签页场景） */
+  useEffect(() => {
+    setLastExportTime(loadLastExportTime());
+  }, [applications.length, resumes.length, interviews.length]);
+
   /** 导出全部数据为 JSON 文件 */
   function handleExportData() {
     const data = buildExportData({ applications, resumes, interviews });
     downloadJson(data, `developer-job-hunt-crm-${new Date().toISOString().slice(0, 10)}.json`);
+    saveLastExportTime();
+    setLastExportTime(loadLastExportTime());
     setSettingsMessage("已导出当前本地数据。");
   }
 
@@ -98,6 +126,28 @@ export function useSettings({
     setSettingsMessage("已加载示例数据，可用于演示 JD 分析、简历匹配和面试复盘。");
   }
 
+  /** 清除所有本地数据 */
+  async function handleClearAllData() {
+    const hasExisting = applications.length > 0 || resumes.length > 0 || interviews.length > 0;
+    if (!hasExisting) {
+      setSettingsMessage("当前没有数据需要清除。");
+      return;
+    }
+
+    const confirmed = window.confirm(
+      `即将删除全部本地数据：\n${applications.length} 个岗位、${resumes.length} 个简历、${interviews.length} 条面试记录。\n\n建议先导出备份后再清除。此操作不可撤销！`,
+    );
+    if (!confirmed) return;
+
+    try {
+      await replaceAllData({ app: "developer-job-hunt-crm", version: 1, exportedAt: new Date().toISOString(), applications: [], resumes: [], interviews: [] });
+      await refresh();
+      setSettingsMessage("已清除全部本地数据。");
+    } catch (error) {
+      setSettingsMessage("清除数据失败，请刷新页面重试。");
+    }
+  }
+
   /** 保存 AI Provider 配置到 localStorage */
   function handleAIConfigSave(config: AIProviderConfig) {
     saveAIConfig(config);
@@ -112,10 +162,12 @@ export function useSettings({
   return {
     settingsMessage,
     aiConfig,
+    lastExportTime,
     initAIConfig,
     handleExportData,
     handleImportFile,
     handleLoadSampleData,
+    handleClearAllData,
     handleAIConfigSave,
   };
 }

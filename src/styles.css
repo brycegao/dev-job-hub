@@ -1059,6 +1059,42 @@ textarea {
   line-height: 1.7;
 }
 
+.welcome-card {
+  text-align: center;
+  padding: 28px 24px;
+}
+
+.welcome-icon {
+  font-size: 48px;
+  margin-bottom: 8px;
+}
+
+.welcome-card h2 {
+  margin: 0 0 10px;
+  color: #111827;
+  font-size: 22px;
+}
+
+.welcome-desc {
+  margin: 0 auto 18px;
+  max-width: 520px;
+  color: #475569;
+  font-size: 14px;
+  line-height: 1.8;
+}
+
+.welcome-actions {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 14px;
+}
+
+.welcome-tip {
+  margin: 0;
+  color: #94a3b8;
+  font-size: 13px;
+}
+
 .error-banner {
   display: flex;
   align-items: center;
@@ -1091,6 +1127,37 @@ textarea {
   color: #92400e;
   font-size: 14px;
   margin-bottom: 12px;
+}
+
+.backup-warning {
+  border-color: #fca5a5;
+  background: #fef2f2;
+}
+
+.backup-warning-content {
+  text-align: center;
+}
+
+.backup-warning-content strong {
+  display: block;
+  margin-bottom: 6px;
+  color: #b91c1c;
+  font-size: 14px;
+}
+
+.backup-warning-content p {
+  margin: 0 auto 14px;
+  max-width: 480px;
+  color: #991b1b;
+  font-size: 13px;
+  line-height: 1.7;
+}
+
+.clear-data-section {
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid #e5e7eb;
+  text-align: right;
 }
 
 .review-template {

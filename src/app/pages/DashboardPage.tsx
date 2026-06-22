@@ -7,12 +7,35 @@ import { formatPercent } from "../constants";
 export function DashboardPage({
   metrics,
   onFollowUpClick,
+  onLoadSample,
 }: {
   metrics: ApplicationMetrics;
   onFollowUpClick: (applicationId: string) => void;
+  onLoadSample: () => void;
 }) {
+  const isEmpty = metrics.total === 0;
+
   return (
     <section className="page-grid">
+      {isEmpty && (
+        <section className="panel wide welcome-card">
+          <div className="welcome-icon">🚀</div>
+          <h2>欢迎使用求职作战台</h2>
+          <p className="welcome-desc">
+            专为程序员打造的求职管理工具——记录岗位投递、分析 JD 关键词、匹配简历版本、
+            追踪面试流程并生成可复用的 AI Prompt，帮助你高效复盘、系统求职。
+          </p>
+          <div className="welcome-actions">
+            <button className="primary" onClick={onLoadSample}>
+              加载示例数据，快速体验
+            </button>
+          </div>
+          <p className="welcome-tip">
+            或点击右上角「新增岗位」开始记录你的第一个投递。
+          </p>
+        </section>
+      )}
+
       <MetricCard label="总投递" value={metrics.total} />
       <MetricCard label="本周投递" value={metrics.thisWeek} />
       <MetricCard label="回复数" value={metrics.replies} />

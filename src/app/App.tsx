@@ -189,6 +189,7 @@ export function App() {
           <DashboardPage
             metrics={metrics}
             onFollowUpClick={handleFollowUpClick}
+            onLoadSample={settings.handleLoadSampleData}
           />
         )}
 
@@ -254,9 +255,11 @@ export function App() {
             resumesCount={resumeData.resumes.length}
             interviewsCount={interviewData.interviews.length}
             message={settings.settingsMessage}
+            lastExportTime={settings.lastExportTime}
             onExport={settings.handleExportData}
             onImport={settings.handleImportFile}
             onLoadSample={settings.handleLoadSampleData}
+            onClearAll={settings.handleClearAllData}
             aiConfig={settings.aiConfig}
             onAIConfigSave={settings.handleAIConfigSave}
           />
