@@ -1,5 +1,13 @@
-import { FormEvent, useEffect, useMemo, useState } from "react";
+import { FormEvent, type ReactNode, useEffect, useMemo, useState } from "react";
 import { buildApplicationMetrics } from "../features/analytics/services/applicationAnalytics";
+import {
+  buildInterviewAnswerPack,
+  buildInterviewPrepPack,
+} from "../features/ai-assist/services/promptPackService";
+import type {
+  InterviewAnswerPack,
+  InterviewPrepPack,
+} from "../features/ai-assist/types";
 import {
   createApplication,
   deleteApplication,
@@ -90,6 +98,10 @@ const defaultResumeInput: ResumeVersionInput = {
 
 function formatPercent(value: number): string {
   return `${Math.round(value * 100)}%`;
+}
+
+async function copyText(text: string): Promise<void> {
+  await navigator.clipboard.writeText(text);
 }
 
 export function App() {
@@ -529,6 +541,9 @@ export function App() {
                       key={interview.id}
                       interview={interview}
                       application={application}
+                      resume={resumes.find(
+                        (resume) => resume.id === application?.resumeVersionId,
+                      )}
                       onDelete={handleInterviewDelete}
                     />
                   );
@@ -843,12 +858,21 @@ function ApplicationDetail({
 }) {
   const [analysis, setAnalysis] = useState<JDAnalysisResult | null>(null);
   const [matchResult, setMatchResult] = useState<ResumeMatchResult | null>(null);
+  const [prepPack, setPrepPack] = useState<InterviewPrepPack | null>(null);
+  const [copyMessage, setCopyMessage] = useState("");
   const linkedResume = resumes.find((resume) => resume.id === application.resumeVersionId);
 
   useEffect(() => {
     setAnalysis(null);
     setMatchResult(null);
+    setPrepPack(null);
+    setCopyMessage("");
   }, [application.id, application.jdText]);
+
+  async function handleCopyPrepPrompt(prompt: string) {
+    await copyText(prompt);
+    setCopyMessage("已复制面试准备 Prompt，可粘贴到 ChatGPT / DeepSeek / 豆包。");
+  }
 
   return (
     <section className="panel detail-card">
@@ -935,12 +959,45 @@ function ApplicationDetail({
         </div>
       )}
       {matchResult && <ResumeMatchCard result={matchResult} />}
+      <div className="ai-panel">
+        <div className="section-title-row">
+          <div>
+            <h3>AI 面试准备</h3>
+            <p>零配置生成基础准备建议，也可复制完整 Prompt 到常用 AI。</p>
+          </div>
+          <button
+            type="button"
+            className="secondary-action"
+            disabled={!application.jdText.trim()}
+            onClick={() => setPrepPack(buildInterviewPrepPack(application, linkedResume))}
+          >
+            生成准备包
+          </button>
+        </div>
+        {prepPack ? (
+          <PromptPackCard
+            title="面试准备包"
+            prompt={prepPack.prompt}
+            copyLabel="复制 Prompt"
+            onCopy={() => handleCopyPrepPrompt(prepPack.prompt)}
+            message={copyMessage}
+          >
+            <TextList title="重点准备" values={prepPack.focusAreas} />
+            <TextList title="可能被问" values={prepPack.likelyQuestions} />
+            <TextList title="项目素材" values={prepPack.projectStories} />
+            <TextList title="复习清单" values={prepPack.reviewChecklist} />
+          </PromptPackCard>
+        ) : (
+          <p className="empty">粘贴 JD 后可生成面试准备建议。关联简历后，Prompt 会自动带上简历卖点。</p>
+        )}
+      </div>
       <div className="detail-section">
         <h3>备注</h3>
         <p>{application.notes || "暂未填写备注。"}</p>
       </div>
       <InterviewSection
         application={application}
+        resume={linkedResume}
         interviews={interviews}
         onInterviewCreate={onInterviewCreate}
         onInterviewDelete={onInterviewDelete}
@@ -951,11 +1008,13 @@ function ApplicationDetail({
 
 function InterviewSection({
   application,
+  resume,
   interviews,
   onInterviewCreate,
   onInterviewDelete,
 }: {
   application: JobApplication;
+  resume?: ResumeVersion;
   interviews: InterviewRecord[];
   onInterviewCreate: (input: InterviewRecordInput) => void;
   onInterviewDelete: (interview: InterviewRecord) => void;
@@ -1118,6 +1177,7 @@ function InterviewSection({
             key={interview.id}
             interview={interview}
             application={application}
+            resume={resume}
             onDelete={onInterviewDelete}
           />
         ))}
@@ -1129,12 +1189,22 @@ function InterviewSection({
 function InterviewRecordCard({
   interview,
   application,
+  resume,
   onDelete,
 }: {
   interview: InterviewRecord;
-  application?: Pick<JobApplication, "companyName" | "jobTitle">;
+  application?: JobApplication;
+  resume?: ResumeVersion;
   onDelete: (interview: InterviewRecord) => void;
 }) {
+  const [answerPack, setAnswerPack] = useState<InterviewAnswerPack | null>(null);
+  const [copyMessage, setCopyMessage] = useState("");
+
+  async function handleCopyAnswerPrompt(prompt: string) {
+    await copyText(prompt);
+    setCopyMessage("已复制参考答案 Prompt。");
+  }
+
   return (
     <article className="interview-card">
       <div className="interview-card-header">
@@ -1170,6 +1240,39 @@ function InterviewRecordCard({
           <p>{interview.selfReview}</p>
         </div>
       )}
+      <div className="ai-panel compact">
+        <div className="section-title-row">
+          <h3>AI 参考答案</h3>
+          <button
+            className="secondary-action"
+            type="button"
+            onClick={() =>
+              setAnswerPack(
+                buildInterviewAnswerPack({
+                  interview,
+                  application,
+                  resume,
+                }),
+              )
+            }
+          >
+            生成 Prompt
+          </button>
+        </div>
+        {answerPack && (
+          <PromptPackCard
+            title="参考答案 Prompt"
+            prompt={answerPack.prompt}
+            copyLabel="复制 Prompt"
+            onCopy={() => handleCopyAnswerPrompt(answerPack.prompt)}
+            message={copyMessage}
+          >
+            <TextList title="回答角度" values={answerPack.answerAngles} />
+            <TextList title="STAR 结构" values={answerPack.starTemplate} />
+            <TextList title="可能追问" values={answerPack.followUpQuestions} />
+          </PromptPackCard>
+        )}
+      </div>
     </article>
   );
 }
@@ -1314,6 +1417,39 @@ function ResumeMatchCard({ result }: { result: ResumeMatchResult }) {
       <KeywordGroup title="建议补充" values={result.missingPoints} tone="risk" />
       <TextList title="建议突出项目" values={result.suggestedProjects} />
       <TextList title="面试准备方向" values={result.interviewPrep} />
+    </div>
+  );
+}
+
+function PromptPackCard({
+  title,
+  prompt,
+  copyLabel,
+  message,
+  onCopy,
+  children,
+}: {
+  title: string;
+  prompt: string;
+  copyLabel: string;
+  message: string;
+  onCopy: () => void;
+  children: ReactNode;
+}) {
+  return (
+    <div className="prompt-pack">
+      <div className="prompt-pack-header">
+        <span>{title}</span>
+        <button className="secondary-action" type="button" onClick={onCopy}>
+          {copyLabel}
+        </button>
+      </div>
+      <div className="prompt-pack-grid">{children}</div>
+      <details className="prompt-preview">
+        <summary>查看完整 Prompt</summary>
+        <pre>{prompt}</pre>
+      </details>
+      {message && <p className="settings-message">{message}</p>}
     </div>
   );
 }
