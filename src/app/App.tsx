@@ -15,6 +15,8 @@ import {
   type JobApplicationInput,
   type JobStatus,
 } from "../features/applications/types";
+import { analyzeJD } from "../features/jd-analysis/services/jdAnalysisService";
+import type { JDAnalysisResult } from "../features/jd-analysis/types";
 
 type Page = "dashboard" | "applications" | "analytics";
 
@@ -498,6 +500,12 @@ function ApplicationDetail({
   onDelete: (application: JobApplication) => void;
   onStatusChange: (application: JobApplication, status: JobStatus) => void;
 }) {
+  const [analysis, setAnalysis] = useState<JDAnalysisResult | null>(null);
+
+  useEffect(() => {
+    setAnalysis(null);
+  }, [application.id, application.jdText]);
+
   return (
     <section className="panel detail-card">
       <div className="panel-header">
@@ -538,13 +546,67 @@ function ApplicationDetail({
         </select>
       </label>
       <div className="detail-section">
-        <h3>JD 原文</h3>
+        <div className="section-title-row">
+          <h3>JD 原文</h3>
+          <button
+            type="button"
+            className="secondary-action"
+            disabled={!application.jdText.trim()}
+            onClick={() => setAnalysis(analyzeJD(application.jdText))}
+          >
+            分析 JD
+          </button>
+        </div>
         <p>{application.jdText || "暂未填写 JD。"}</p>
       </div>
+      {analysis && <JDAnalysisCard analysis={analysis} />}
       <div className="detail-section">
         <h3>备注</h3>
         <p>{application.notes || "暂未填写备注。"}</p>
       </div>
     </section>
+  );
+}
+
+function JDAnalysisCard({ analysis }: { analysis: JDAnalysisResult }) {
+  return (
+    <div className="analysis-card">
+      <div className="analysis-summary">
+        <span>JD 技术画像</span>
+        <strong>{analysis.summary}</strong>
+      </div>
+      <KeywordGroup title="技术栈" values={analysis.techKeywords} />
+      <KeywordGroup title="业务方向" values={analysis.domainKeywords} />
+      <KeywordGroup title="能力要求" values={analysis.capabilityKeywords} />
+      <KeywordGroup title="加分项" values={analysis.bonusKeywords} />
+      <KeywordGroup title="风险提示" values={analysis.risks} tone="risk" />
+    </div>
+  );
+}
+
+function KeywordGroup({
+  title,
+  values,
+  tone = "default",
+}: {
+  title: string;
+  values: string[];
+  tone?: "default" | "risk";
+}) {
+  return (
+    <div className="keyword-group">
+      <span>{title}</span>
+      {values.length ? (
+        <div className="keyword-list">
+          {values.map((value) => (
+            <i key={value} className={tone === "risk" ? "risk" : ""}>
+              {value}
+            </i>
+          ))}
+        </div>
+      ) : (
+        <p>未识别</p>
+      )}
+    </div>
   );
 }
