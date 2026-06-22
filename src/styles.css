@@ -171,12 +171,18 @@ button {
 }
 
 .panel-header h2 {
+  flex: 0 0 auto;
   font-size: 18px;
+  white-space: nowrap;
 }
 
 .panel-header p {
   color: #64748b;
   margin-top: 4px;
+}
+
+.panel-header select {
+  min-width: 0;
 }
 
 .workspace {
