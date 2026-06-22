@@ -24,6 +24,7 @@ import { confirmDelete, copyText } from "../constants";
 import { KeywordGroup } from "./KeywordGroup";
 import { PromptPackCard } from "./PromptPackCard";
 import { TextList } from "./TextList";
+import { exportInterviewToCalendar } from "../../features/interviews/services/calendarExportService";
 
 export function InterviewRecordCard({
   interview,
@@ -108,11 +109,21 @@ export function InterviewRecordCard({
           <strong>{interviewRoundLabels[interview.round]}</strong>
           <span>{application ? `${application.companyName} · ${application.jobTitle}` : "未知岗位"}</span>
         </div>
-        <button className="danger-lite" onClick={() => {
-          if (confirmDelete("面试记录")) onDelete(interview);
-        }}>
-          删除
-        </button>
+        <div className="inline-actions">
+          {interview.scheduledAt && (
+            <button
+              className="secondary-action"
+              onClick={() => exportInterviewToCalendar(interview, application)}
+            >
+              导出日程
+            </button>
+          )}
+          <button className="danger-lite" onClick={() => {
+            if (confirmDelete("面试记录")) onDelete(interview);
+          }}>
+            删除
+          </button>
+        </div>
       </div>
       <div className="detail-grid compact">
         <span>时间</span>

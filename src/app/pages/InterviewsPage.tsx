@@ -3,6 +3,7 @@ import type { JobApplication } from "../../features/applications/types";
 import type { InterviewRecord } from "../../features/interviews/types";
 import type { ResumeVersion } from "../../features/resumes/types";
 import { InterviewRecordCard } from "../components/InterviewRecordCard";
+import { exportAllInterviewsToCalendar } from "../../features/interviews/services/calendarExportService";
 
 export function InterviewsPage({
   interviews,
@@ -19,10 +20,20 @@ export function InterviewsPage({
   onDelete: (interview: InterviewRecord) => void;
   onUpdate: (interview: InterviewRecord) => void;
 }) {
+  const hasScheduledInterviews = interviews.some((i) => i.scheduledAt);
+
   return (
     <section className="panel">
       <div className="panel-header">
         <h2>面试复盘</h2>
+        {hasScheduledInterviews && (
+          <button
+            className="secondary-action"
+            onClick={() => exportAllInterviewsToCalendar(interviews, applications)}
+          >
+            导出全部日程
+          </button>
+        )}
       </div>
       {interviews.length === 0 ? (
         <p className="empty">还没有面试记录。进入岗位详情后可以添加一面、二面、HR 面等复盘。</p>

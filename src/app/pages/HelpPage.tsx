@@ -62,6 +62,20 @@ export function HelpPage() {
 
       <section className="panel">
         <div className="panel-header">
+          <h2>导出日历</h2>
+        </div>
+        <div className="text-list">
+          <ul>
+            <li>在面试记录卡片上点击"导出日程"，可下载单个面试的 .ics 日历文件。</li>
+            <li>在"面试"页面点击"导出全部日程"，一次下载所有面试日程。</li>
+            <li>下载后双击 .ics 文件，即可添加到系统日历（macOS 日历 / Google Calendar / Outlook 等）。</li>
+            <li>仅已填写面试时间的记录可导出；默认每场面试时长 60 分钟。</li>
+          </ul>
+        </div>
+      </section>
+
+      <section className="panel">
+        <div className="panel-header">
           <h2>AI 使用建议</h2>
         </div>
         <div className="text-list">
