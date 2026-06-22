@@ -15,6 +15,7 @@ import {
   interviewInviteStatusLabels,
   interviewResultLabels,
   interviewRoundLabels,
+  ratingLabels,
   type InterviewInviteStatus,
   type InterviewRecord,
   type InterviewRound,
@@ -215,21 +216,54 @@ export function InterviewRecordCard({
         </label>
       </div>
       {interview.summary && <p className="interview-summary">{interview.summary}</p>}
-      <TextList
-        title="问题"
-        values={interview.questions.map((question) => question.question)}
-      />
-      <KeywordGroup
-        title="标签"
-        values={Array.from(new Set(interview.questions.flatMap((question) => question.tags)))}
-      />
-      <TextList title="薄弱点" values={interview.weakPoints} />
-      {interview.selfReview && (
-        <div className="detail-section">
-          <h3>自我复盘</h3>
-          <p>{interview.selfReview}</p>
+      <div className="review-template">
+        <div className="review-grid">
+          {interview.rating && interview.rating > 0 && (
+            <div className="review-item">
+              <span>整体表现</span>
+              <strong className="review-rating">
+                {"★".repeat(interview.rating)}{"☆".repeat(5 - interview.rating)} {ratingLabels[interview.rating]}
+              </strong>
+            </div>
+          )}
+          {interview.strengths.length > 0 && (
+            <div className="review-item">
+              <span>表现亮点</span>
+              <TextList title="表现亮点" values={interview.strengths} />
+            </div>
+          )}
+          {interview.weakPoints.length > 0 && (
+            <div className="review-item">
+              <span>薄弱点</span>
+              <TextList title="薄弱点" values={interview.weakPoints} />
+            </div>
+          )}
+          {interview.actionItems.length > 0 && (
+            <div className="review-item">
+              <span>改进行动项</span>
+              <TextList title="改进行动项" values={interview.actionItems} />
+            </div>
+          )}
         </div>
-      )}
+        {interview.questions.length > 0 && (
+          <>
+            <div className="section-title-row">
+              <h3>面试问题</h3>
+              <span className="muted-count">{interview.questions.length} 题</span>
+            </div>
+            <KeywordGroup
+              title="标签"
+              values={Array.from(new Set(interview.questions.flatMap((question) => question.tags)))}
+            />
+          </>
+        )}
+        {interview.selfReview && (
+          <div className="detail-section">
+            <h3>自我复盘</h3>
+            <p>{interview.selfReview}</p>
+          </div>
+        )}
+      </div>
       <div className="ai-panel compact">
         <div className="section-title-row">
           <h3>AI 参考答案</h3>

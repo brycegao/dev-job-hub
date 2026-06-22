@@ -107,6 +107,8 @@ export const sampleData: AppDataExport = {
       ],
       selfReview: "需要把 Google Play Data Safety 和 SDK 披露讲得更结构化。",
       weakPoints: ["Data Safety 表单细节", "隐私政策与实际采集行为对齐"],
+      strengths: ["Flutter 工程化方案讲解清晰", "多语言 RTL 方案有实际落地经验"],
+      actionItems: ["整理 3 个 Google Play Data Safety 典型案例", "准备隐私政策合规检查清单"],
       result: "pending",
       summary: "整体方向匹配，下一轮需要准备出海合规细节。",
       createdAt: now,

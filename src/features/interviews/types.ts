@@ -37,6 +37,9 @@ export type InterviewRecord = {
   questions: InterviewQuestion[];
   selfReview?: string;
   weakPoints: string[];
+  strengths: string[];
+  actionItems: string[];
+  rating?: number;
   result: InterviewResult;
   summary?: string;
   createdAt: string;
@@ -70,4 +73,12 @@ export const interviewInviteStatusLabels: Record<InterviewInviteStatus, string> 
   confirmed: "已确认",
   completed: "已结束",
   cancelled: "已取消",
+};
+
+export const ratingLabels: Record<number, string> = {
+  1: "很差",
+  2: "较差",
+  3: "一般",
+  4: "较好",
+  5: "很好",
 };

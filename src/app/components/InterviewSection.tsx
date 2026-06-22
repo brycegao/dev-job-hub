@@ -5,6 +5,7 @@ import {
   interviewInviteStatusLabels,
   interviewResultLabels,
   interviewRoundLabels,
+  ratingLabels,
   type InterviewInviteStatus,
   type InterviewQuestion,
   type InterviewRecord,
@@ -45,6 +46,9 @@ export function InterviewSection({
   const [selfReview, setSelfReview] = useState("");
   const [result, setResult] = useState<InterviewResult>("pending");
   const [summary, setSummary] = useState("");
+  const [rating, setRating] = useState<number>(0);
+  const [strengthsText, setStrengthsText] = useState("");
+  const [actionItemsText, setActionItemsText] = useState("");
 
   function resetForm() {
     setRound("first");
@@ -60,6 +64,9 @@ export function InterviewSection({
     setSelfReview("");
     setResult("pending");
     setSummary("");
+    setRating(0);
+    setStrengthsText("");
+    setActionItemsText("");
   }
 
   function parseLines(text: string): string[] {
@@ -89,6 +96,9 @@ export function InterviewSection({
       questions,
       selfReview,
       weakPoints: parseLines(weakPointsText),
+      strengths: parseLines(strengthsText),
+      actionItems: parseLines(actionItemsText),
+      rating: rating || undefined,
       result,
       summary,
     });
@@ -190,50 +200,90 @@ export function InterviewSection({
             </select>
           </label>
         </div>
-        <label>
-          面试问题
+        <div className="review-template">
+          <div className="section-title-row">
+            <h3>结构化复盘</h3>
+            <span className="muted">面试后填写，帮助持续改进</span>
+          </div>
+          <div className="form-grid">
+            <label>
+              整体表现
+              <select
+                value={rating}
+                onChange={(event) => setRating(Number(event.target.value))}
+              >
+                <option value={0}>未评分</option>
+                {[1, 2, 3, 4, 5].map((n) => (
+                  <option key={n} value={n}>
+                    {"★".repeat(n)}{"☆".repeat(5 - n)} {ratingLabels[n]}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label>
+              总结
+              <input
+                value={summary}
+                onChange={(event) => setSummary(event.target.value)}
+                placeholder="一句话总结这轮面试"
+              />
+            </label>
+          </div>
+          <label>
+            面试问题
+          </label>
           <textarea
             value={questionsText}
             onChange={(event) => setQuestionsText(event.target.value)}
             placeholder="每行一个问题，例如：你如何做 Flutter 多语言？"
             rows={4}
           />
-        </label>
-        <label>
-          问题标签
-          <textarea
-            value={tagsText}
-            onChange={(event) => setTagsText(event.target.value)}
-            placeholder="每行一个标签"
-            rows={2}
-          />
-        </label>
-        <label>
-          薄弱点
-          <textarea
-            value={weakPointsText}
-            onChange={(event) => setWeakPointsText(event.target.value)}
-            placeholder="每行一个需要补强的点"
-            rows={2}
-          />
-        </label>
-        <label>
-          自我复盘
-          <textarea
-            value={selfReview}
-            onChange={(event) => setSelfReview(event.target.value)}
-            placeholder="这轮哪里答得好，哪里需要改"
-            rows={3}
-          />
-        </label>
-        <label>
-          总结
-          <input
-            value={summary}
-            onChange={(event) => setSummary(event.target.value)}
-            placeholder="一句话总结这轮面试"
-          />
-        </label>
+          <label>
+            问题标签
+            <textarea
+              value={tagsText}
+              onChange={(event) => setTagsText(event.target.value)}
+              placeholder="每行一个标签"
+              rows={2}
+            />
+          </label>
+          <label>
+            薄弱点
+            <textarea
+              value={weakPointsText}
+              onChange={(event) => setWeakPointsText(event.target.value)}
+              placeholder="每行一个需要补强的点"
+              rows={2}
+            />
+          </label>
+          <label>
+            表现亮点
+            <textarea
+              value={strengthsText}
+              onChange={(event) => setStrengthsText(event.target.value)}
+              placeholder="每行一个亮点，例如：Flutter 混合栈方案讲解清晰"
+              rows={2}
+            />
+          </label>
+          <label>
+            改进行动项
+            <textarea
+              value={actionItemsText}
+              onChange={(event) => setActionItemsText(event.target.value)}
+              placeholder="每行一个具体行动，例如：整理 3 个 Flutter 性能优化案例"
+              rows={2}
+            />
+          </label>
+          <label>
+            自我复盘
+            <textarea
+              value={selfReview}
+              onChange={(event) => setSelfReview(event.target.value)}
+              placeholder="这轮哪里答得好，哪里需要改"
+              rows={3}
+            />
+          </label>
+        </div>
         <div className="form-actions">
           <button className="primary" type="submit">
             保存面试记录

@@ -878,6 +878,43 @@ textarea {
   line-height: 1.7;
 }
 
+.review-template {
+  display: grid;
+  gap: 12px;
+  border: 1px solid #e0e7ff;
+  border-radius: 8px;
+  background: #f5f7ff;
+  padding: 14px;
+}
+
+.review-template .muted {
+  color: #94a3b8;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.review-grid {
+  display: grid;
+  gap: 12px;
+}
+
+.review-item {
+  display: grid;
+  gap: 6px;
+}
+
+.review-item > span {
+  color: #4338ca;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.review-rating {
+  color: #f59e0b;
+  font-size: 16px;
+  letter-spacing: 2px;
+}
+
 @media (max-width: 980px) {
   .app-shell {
     grid-template-columns: 1fr;
