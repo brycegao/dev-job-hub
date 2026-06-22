@@ -34,6 +34,7 @@ export function InterviewSection({
   onInterviewDelete: (interview: InterviewRecord) => void;
   onInterviewUpdate: (interview: InterviewRecord) => void;
 }) {
+  const [editingInterview, setEditingInterview] = useState<InterviewRecord | null>(null);
   const [round, setRound] = useState<InterviewRound>("first");
   const [inviteStatus, setInviteStatus] = useState<InterviewInviteStatus>("invited");
   const [invitedAt, setInvitedAt] = useState(new Date().toISOString().slice(0, 16));
@@ -70,6 +71,35 @@ export function InterviewSection({
     setActionItemsText("");
   }
 
+  /** 将已有面试记录填充到表单，进入编辑模式 */
+  function startEditInterview(interview: InterviewRecord) {
+    setEditingInterview(interview);
+    setRound(interview.round);
+    setInviteStatus(interview.inviteStatus ?? "invited");
+    setInvitedAt(interview.invitedAt || new Date().toISOString().slice(0, 16));
+    setScheduledAt(interview.scheduledAt || "");
+    setConfirmedAt(interview.confirmedAt || "");
+    setInterviewerType(interview.interviewerType || "");
+    setInviteNotes(interview.inviteNotes || "");
+    setQuestionsText(interview.questions.map((q) => q.question).join("\n"));
+    // 合并所有问题的标签去重作为默认值
+    const allTags = Array.from(new Set(interview.questions.flatMap((q) => q.tags)));
+    setTagsText(allTags.join("\n") || "");
+    setWeakPointsText(interview.weakPoints.join("\n"));
+    setSelfReview(interview.selfReview || "");
+    setResult(interview.result);
+    setSummary(interview.summary || "");
+    setRating(interview.rating || 0);
+    setStrengthsText(interview.strengths.join("\n"));
+    setActionItemsText(interview.actionItems.join("\n"));
+  }
+
+  /** 取消编辑，恢复表单默认值 */
+  function cancelEditInterview() {
+    setEditingInterview(null);
+    resetForm();
+  }
+
   function parseLines(text: string): string[] {
     return text
       .split("\n")
@@ -79,51 +109,91 @@ export function InterviewSection({
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const questions = parseLines(questionsText).map<InterviewQuestion>((question) => ({
-      id: createId(),
-      question,
-      tags: parseLines(tagsText),
-    }));
+    const questionLines = parseLines(questionsText);
+    const tagList = parseLines(tagsText);
 
-    const parsedWeakPoints = parseLines(weakPointsText);
-    const parsedStrengths = parseLines(strengthsText);
-    const parsedActionItems = parseLines(actionItemsText);
+    if (editingInterview) {
+      // 编辑模式：保留已有问题的 ID，新增的问题生成新 ID
+      const questions = questionLines.map<InterviewQuestion>((question, index) => {
+        const existing = editingInterview.questions[index];
+        return {
+          id: existing?.id || createId(),
+          question,
+          answerNotes: existing?.answerNotes,
+          tags: tagList,
+        };
+      });
 
-    const base = {
-      jobApplicationId: application.id,
-      round,
-      inviteStatus,
-      invitedAt,
-      scheduledAt,
-      confirmedAt,
-      interviewerType,
-      inviteNotes,
-      questions: questionsText ? questions : [],
-      result,
-    };
+      const updated: InterviewRecord = {
+        ...editingInterview,
+        round,
+        inviteStatus,
+        invitedAt,
+        scheduledAt,
+        confirmedAt,
+        interviewerType,
+        inviteNotes,
+        questions: questionLines ? questions : [],
+        result,
+        selfReview,
+        weakPoints: parseLines(weakPointsText),
+        strengths: parseLines(strengthsText),
+        actionItems: parseLines(actionItemsText),
+        rating: rating || undefined,
+        summary,
+        updatedAt: new Date().toISOString(),
+      };
 
-    // 仅在用户实际填写复盘字段时才提交，避免"空复盘"与"未复盘"无法区分
-    const hasReview = parsedWeakPoints.length || parsedStrengths.length || parsedActionItems.length || rating > 0 || selfReview || summary;
+      onInterviewUpdate(updated);
+      cancelEditInterview();
+    } else {
+      // 新建模式
+      const questions = questionLines.map<InterviewQuestion>((question) => ({
+        id: createId(),
+        question,
+        tags: tagList,
+      }));
 
-    onInterviewCreate({
-      ...base,
-      ...(hasReview
-        ? {
-            selfReview,
-            weakPoints: parsedWeakPoints,
-            strengths: parsedStrengths,
-            actionItems: parsedActionItems,
-            rating: rating || undefined,
-            summary,
-          }
-        : {
-            selfReview: "",
-            weakPoints: [],
-            strengths: [],
-            actionItems: [],
-          }),
-    });
-    resetForm();
+      const parsedWeakPoints = parseLines(weakPointsText);
+      const parsedStrengths = parseLines(strengthsText);
+      const parsedActionItems = parseLines(actionItemsText);
+
+      const base = {
+        jobApplicationId: application.id,
+        round,
+        inviteStatus,
+        invitedAt,
+        scheduledAt,
+        confirmedAt,
+        interviewerType,
+        inviteNotes,
+        questions: questionsText ? questions : [],
+        result,
+      };
+
+      // 仅在用户实际填写复盘字段时才提交，避免"空复盘"与"未复盘"无法区分
+      const hasReview = parsedWeakPoints.length || parsedStrengths.length || parsedActionItems.length || rating > 0 || selfReview || summary;
+
+      onInterviewCreate({
+        ...base,
+        ...(hasReview
+          ? {
+              selfReview,
+              weakPoints: parsedWeakPoints,
+              strengths: parsedStrengths,
+              actionItems: parsedActionItems,
+              rating: rating || undefined,
+              summary,
+            }
+          : {
+              selfReview: "",
+              weakPoints: [],
+              strengths: [],
+              actionItems: [],
+            }),
+      });
+      resetForm();
+    }
   }
 
   return (
@@ -133,6 +203,14 @@ export function InterviewSection({
         <span className="muted-count">{interviews.length} 条</span>
       </div>
       <form className="interview-form" onSubmit={handleSubmit}>
+        {editingInterview && (
+          <div className="edit-banner">
+            <span>正在编辑：{interviewRoundLabels[editingInterview.round]}</span>
+            <button type="button" className="secondary-action" onClick={cancelEditInterview}>
+              取消编辑
+            </button>
+          </div>
+        )}
         <div className="form-grid">
           <label>
             邀约状态
@@ -304,8 +382,13 @@ export function InterviewSection({
         </div>
         <div className="form-actions">
           <button className="primary" type="submit">
-            保存面试记录
+            {editingInterview ? "更新面试记录" : "保存面试记录"}
           </button>
+          {editingInterview && (
+            <button type="button" className="secondary-action" onClick={cancelEditInterview}>
+              取消
+            </button>
+          )}
         </div>
       </form>
       <div className="interview-board">
@@ -318,6 +401,7 @@ export function InterviewSection({
             aiConfig={aiConfig}
             onDelete={onInterviewDelete}
             onUpdate={onInterviewUpdate}
+            onStartEdit={startEditInterview}
           />
         ))}
       </div>

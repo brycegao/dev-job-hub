@@ -985,6 +985,18 @@ textarea {
   font-size: 16px;
 }
 
+.edit-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 14px;
+  border-radius: 8px;
+  background: #fef3c7;
+  color: #92400e;
+  font-size: 14px;
+  margin-bottom: 12px;
+}
+
 .review-template {
   display: grid;
   gap: 12px;

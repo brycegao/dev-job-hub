@@ -52,6 +52,7 @@ export function App() {
     refresh: callRefresh,
     setPage,
     onError: setErrorMessage,
+    applications: appData.applications,
   });
   const settings = useSettings({
     applications: appData.applications,

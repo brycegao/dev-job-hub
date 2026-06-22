@@ -56,6 +56,15 @@ export function useSettings({
       return;
     }
 
+    // 导入前确认，避免误操作覆盖全部数据
+    const hasExisting = applications.length > 0 || resumes.length > 0 || interviews.length > 0;
+    if (hasExisting) {
+      const confirmed = window.confirm(
+        `当前本地数据：${applications.length} 个岗位、${resumes.length} 个简历、${interviews.length} 条面试记录。\n\n导入将替换以上全部数据，此操作不可撤销。确定继续？`,
+      );
+      if (!confirmed) return;
+    }
+
     try {
       const text = await file.text();
       const data = parseImportData(text);
@@ -72,6 +81,15 @@ export function useSettings({
 
   /** 加载示例数据用于演示 */
   async function handleLoadSampleData() {
+    // 加载示例数据前确认
+    const hasExisting = applications.length > 0 || resumes.length > 0 || interviews.length > 0;
+    if (hasExisting) {
+      const confirmed = window.confirm(
+        `当前本地数据：${applications.length} 个岗位、${resumes.length} 个简历、${interviews.length} 条面试记录。\n\n加载示例数据将替换以上全部数据，确定继续？`,
+      );
+      if (!confirmed) return;
+    }
+
     await replaceAllData(sampleData);
     await refresh({
       applicationId: "sample-app-1",

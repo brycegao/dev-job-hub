@@ -33,6 +33,7 @@ export function InterviewRecordCard({
   aiConfig,
   onDelete,
   onUpdate,
+  onStartEdit,
 }: {
   interview: InterviewRecord;
   application?: JobApplication;
@@ -40,6 +41,7 @@ export function InterviewRecordCard({
   aiConfig: AIProviderConfig;
   onDelete: (interview: InterviewRecord) => void;
   onUpdate: (interview: InterviewRecord) => void;
+  onStartEdit?: (interview: InterviewRecord) => void;
 }) {
   const [answerPack, setAnswerPack] = useState<InterviewAnswerPack | null>(null);
   const { copyMessage, aiResult, aiStatus, handleCopy, handleGenerate } = useAiGenerate();
@@ -58,6 +60,14 @@ export function InterviewRecordCard({
               onClick={() => exportInterviewToCalendar(interview, application)}
             >
               导出日程
+            </button>
+          )}
+          {onStartEdit && (
+            <button
+              className="secondary-action"
+              onClick={() => onStartEdit(interview)}
+            >
+              编辑
             </button>
           )}
           <button className="danger-lite" onClick={() => {
