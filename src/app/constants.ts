@@ -26,7 +26,7 @@ export const navItems: Array<{ key: Page; label: string }> = [
   { key: "help", label: "帮助" },
 ];
 
-/** 岗位表单默认值 */
+/** 岗位表单默认值：投递日期默认今天，跟进日期默认 7 天后 */
 export const defaultInput: JobApplicationInput = {
   companyName: "",
   jobTitle: "",
@@ -37,7 +37,12 @@ export const defaultInput: JobApplicationInput = {
   jobUrl: "",
   jdText: "",
   status: "applied",
-  appliedAt: "",
+  appliedAt: new Date().toISOString().slice(0, 10),
+  nextFollowUpAt: (() => {
+    const d = new Date();
+    d.setDate(d.getDate() + 7);
+    return d.toISOString().slice(0, 10);
+  })(),
   notes: "",
 };
 

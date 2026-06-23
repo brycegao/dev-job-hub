@@ -1,4 +1,4 @@
-import type { ApplicationMetrics } from "../../features/analytics/services/applicationAnalytics";
+import type { ApplicationMetrics, ChannelFunnel } from "../../features/analytics/services/applicationAnalytics";
 import type { TodayAction, TodayActionSummary } from "../../features/action-plan/services/todayActionService";
 import { interviewRoundLabels } from "../../features/interviews/types";
 import { MetricCard } from "../components/MetricCard";
@@ -21,12 +21,14 @@ const categoryLabels: Record<TodayAction["category"], string> = {
 
 export function DashboardPage({
   metrics,
+  channelFunnels,
   actions,
   actionSummary,
   onFollowUpClick,
   onLoadSample,
 }: {
   metrics: ApplicationMetrics;
+  channelFunnels: ChannelFunnel[];
   actions: TodayAction[];
   actionSummary: TodayActionSummary;
   onFollowUpClick: (applicationId: string) => void;
@@ -169,6 +171,59 @@ export function DashboardPage({
             </span>
           </div>
           <StatusBars metrics={metrics.statusCounts} />
+        </section>
+      )}
+
+      {channelFunnels.length > 0 && (
+        <section className="panel wide">
+          <div className="panel-header">
+            <h2>渠道转化漏斗</h2>
+          </div>
+          <div className="channel-funnel-list">
+            {channelFunnels.map((cf) => (
+              <div key={cf.channel} className="channel-funnel-item">
+                <div className="channel-funnel-header">
+                  <strong>{cf.channel}</strong>
+                  <span>{cf.total} 个岗位</span>
+                </div>
+                <div className="channel-funnel-bars">
+                  <div className="funnel-bar-row">
+                    <span>已投递</span>
+                    <div className="funnel-bar">
+                      <div className="funnel-bar-fill" style={{ width: cf.total ? "100%" : "0%" }} />
+                    </div>
+                    <span>{cf.total}</span>
+                  </div>
+                  <div className="funnel-bar-row">
+                    <span>已回复</span>
+                    <div className="funnel-bar">
+                      <div className="funnel-bar-fill" style={{ width: cf.total ? `${(cf.contacted / cf.total) * 100}%` : "0%" }} />
+                    </div>
+                    <span>{cf.contacted}</span>
+                  </div>
+                  <div className="funnel-bar-row">
+                    <span>面试中</span>
+                    <div className="funnel-bar">
+                      <div className="funnel-bar-fill" style={{ width: cf.total ? `${(cf.interviewed / cf.total) * 100}%` : "0%" }} />
+                    </div>
+                    <span>{cf.interviewed}</span>
+                  </div>
+                  <div className="funnel-bar-row">
+                    <span>Offer</span>
+                    <div className="funnel-bar">
+                      <div className="funnel-bar-fill" style={{ width: cf.total ? `${(cf.offer / cf.total) * 100}%` : "0%" }} />
+                    </div>
+                    <span>{cf.offer}</span>
+                  </div>
+                </div>
+                <div className="channel-funnel-rates">
+                  <span>回复率 {formatPercent(cf.responseRate)}</span>
+                  <span>面试率 {formatPercent(cf.interviewRate)}</span>
+                  <span>Offer率 {formatPercent(cf.offerRate)}</span>
+                </div>
+              </div>
+            ))}
+          </div>
         </section>
       )}
 

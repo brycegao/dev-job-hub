@@ -19,6 +19,34 @@ const autoFillLabels: Record<string, string> = {
   remoteType: "工作方式",
 };
 
+/** 渠道名称归一化：统一常见变体为标准名称 */
+const CHANNEL_ALIASES: Record<string, string> = {
+  boss: "BOSS直聘",
+  boss直聘: "BOSS直聘",
+  boos直聘: "BOSS直聘",
+  zhipin: "BOSS直聘",
+  脉脉: "脉脉",
+  maimai: "脉脉",
+  内推: "内推",
+  referral: "内推",
+  拉勾: "拉勾",
+  lagou: "拉勾",
+  猎聘: "猎聘",
+  liepin: "猎聘",
+  智联: "智联招聘",
+  智联招聘: "智联招聘",
+  前程无忧: "前程无忧",
+  "51job": "前程无忧",
+};
+
+/** 将渠道名归一化为标准名称 */
+function normalizeChannel(raw: string): string {
+  const trimmed = raw.trim();
+  if (!trimmed) return trimmed;
+  const lower = trimmed.toLowerCase();
+  return CHANNEL_ALIASES[lower] || CHANNEL_ALIASES[trimmed] || trimmed;
+}
+
 export function ApplicationForm({
   input,
   isEditing,
@@ -58,8 +86,8 @@ export function ApplicationForm({
         patch.jobTitle = extracted.jobTitle;
         filled.add("jobTitle");
       }
-      if (extracted.channel && input.channel !== extracted.channel) {
-        patch.channel = extracted.channel;
+      if (extracted.channel) {
+        patch.channel = normalizeChannel(extracted.channel);
         filled.add("channel");
       }
       if (extracted.jobUrl && !input.jobUrl) {
@@ -236,6 +264,33 @@ export function ApplicationForm({
           rows={5}
         />
       </label>
+      <button
+        type="button"
+        className="secondary"
+        style={{ marginBottom: 12 }}
+        onClick={() => {
+          if (!input.jdText.trim()) return;
+          const extracted = extractJDFields(input.jdText);
+          const patch: Partial<JobApplicationInput> = {};
+          const filled = new Set<string>();
+          if (extracted.companyName && !input.companyName) { patch.companyName = extracted.companyName; filled.add("companyName"); }
+          if (extracted.jobTitle && !input.jobTitle) { patch.jobTitle = extracted.jobTitle; filled.add("jobTitle"); }
+          if (extracted.channel) { patch.channel = normalizeChannel(extracted.channel); filled.add("channel"); }
+          if (extracted.jobUrl && !input.jobUrl) { patch.jobUrl = extracted.jobUrl; filled.add("jobUrl"); }
+          if (extracted.salaryRange && !input.salaryRange) { patch.salaryRange = extracted.salaryRange; filled.add("salaryRange"); }
+          if (extracted.city && !input.city) { patch.city = extracted.city; filled.add("city"); }
+          if (extracted.remoteType && input.remoteType !== extracted.remoteType) { patch.remoteType = extracted.remoteType; filled.add("remoteType"); }
+          if (Object.keys(patch).length > 0) {
+            onInputChange({ ...input, ...patch });
+            setAutoFilledFields(filled);
+            setAutoFillMessage(`已提取：${Array.from(filled).map((f) => autoFillLabels[f]).join("、")}`);
+            setTimeout(() => setAutoFilledFields(new Set()), 1500);
+            setTimeout(() => setAutoFillMessage(""), 4500);
+          }
+        }}
+      >
+        从 JD 提取字段
+      </button>
       <label>
         备注
         <textarea

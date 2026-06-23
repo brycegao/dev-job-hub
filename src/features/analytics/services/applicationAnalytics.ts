@@ -138,3 +138,48 @@ export function buildApplicationMetrics(
     upcomingInterviews,
   };
 }
+
+/** 按渠道分组的漏斗统计 */
+export type ChannelFunnel = {
+  channel: string;
+  total: number;
+  applied: number;
+  contacted: number;
+  interviewed: number;
+  offer: number;
+  responseRate: number;
+  interviewRate: number;
+  offerRate: number;
+};
+
+/** 按渠道计算转化漏斗 */
+export function computeChannelFunnels(applications: JobApplication[]): ChannelFunnel[] {
+  const byChannel = new Map<string, JobApplication[]>();
+  for (const app of applications) {
+    const ch = app.channel || "未填写";
+    const list = byChannel.get(ch) || [];
+    list.push(app);
+    byChannel.set(ch, list);
+  }
+
+  return Array.from(byChannel.entries())
+    .map(([channel, apps]) => {
+      const total = apps.length;
+      const contacted = apps.filter((a) => ["contacted", "interviewing", "offer"].includes(a.status)).length;
+      const interviewed = apps.filter((a) => ["interviewing", "offer"].includes(a.status)).length;
+      const offer = apps.filter((a) => a.status === "offer").length;
+      const applied = apps.filter((a) => a.status === "applied").length;
+      return {
+        channel,
+        total,
+        applied,
+        contacted,
+        interviewed,
+        offer,
+        responseRate: total ? contacted / total : 0,
+        interviewRate: contacted ? interviewed / contacted : 0,
+        offerRate: interviewed ? offer / interviewed : 0,
+      };
+    })
+    .sort((a, b) => b.total - a.total);
+}

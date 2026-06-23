@@ -4,7 +4,7 @@
  */
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { buildTodayActions } from "../features/action-plan/services/todayActionService";
-import { buildApplicationMetrics } from "../features/analytics/services/applicationAnalytics";
+import { buildApplicationMetrics, computeChannelFunnels } from "../features/analytics/services/applicationAnalytics";
 import { getApplications } from "../features/applications/services/applicationService";
 import { getInterviews } from "../features/interviews/services/interviewService";
 import { getResumes } from "../features/resumes/services/resumeService";
@@ -195,6 +195,7 @@ export function App() {
         {page === "dashboard" && (
           <DashboardPage
             metrics={metrics}
+            channelFunnels={computeChannelFunnels(appData.applications)}
             actions={todayActionPlan.actions}
             actionSummary={todayActionPlan.summary}
             onFollowUpClick={handleFollowUpClick}

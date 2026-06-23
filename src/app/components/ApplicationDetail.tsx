@@ -75,6 +75,10 @@ export function ApplicationDetail({
     setBrief(null);
     prepAi.reset();
     briefAi.reset();
+    // 打开详情时自动触发 JD 分析（无需用户点击）
+    if (application.jdText.trim()) {
+      setAnalysis(analyzeJD(application.jdText));
+    }
   }, [application.id, application.jdText]);
 
   return (
@@ -113,6 +117,18 @@ export function ApplicationDetail({
           </>
         )}
       </div>
+      {application.nextFollowUpAt && (() => {
+        const today = new Date();
+        const followUp = new Date(application.nextFollowUpAt);
+        const diffMs = followUp.getTime() - today.getTime();
+        const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+        if (diffDays < 0) {
+          return <p className="status-warning">已超跟进日期 {Math.abs(diffDays)} 天，建议尽快跟进</p>;
+        } else if (diffDays <= 3) {
+          return <p className="status-pending">跟进日期：{application.nextFollowUpAt}（{diffDays} 天后）</p>;
+        }
+        return <p style={{ color: "#6b7280", fontSize: 13, marginTop: 6 }}>下次跟进：{application.nextFollowUpAt}</p>;
+      })()}
       <label>
         快速更新状态
         <select
