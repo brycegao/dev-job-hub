@@ -6,6 +6,13 @@
 
 ![程序员求职作战台演示](./docs/assets/demo.gif)
 
+## Live Demo
+
+- Online demo: https://brycegao.github.io/dev-job-hub/
+- Demo data: open the demo and click「一键加载示例数据，快速体验」
+
+If the demo link is not available yet, enable GitHub Pages in the repository settings and select **GitHub Actions** as the source. The workflow in `.github/workflows/deploy-pages.yml` will publish `dist/` after each push to `main`.
+
 ## Why
 
 找工作时，信息常常散落在招聘 App、微信、简历文档和 AI 对话里：
@@ -151,6 +158,7 @@ python3 scripts/generate_demo_gif.py
 
 ## Documentation
 
+- [docs/why-built-it.md](./docs/why-built-it.md): 为什么做它，可直接发布到开发者社区
 - [mvp-requirements.md](./mvp-requirements.md): MVP 需求
 - [architecture.md](./architecture.md): 技术架构
 - [data-model.md](./data-model.md): 核心数据模型
