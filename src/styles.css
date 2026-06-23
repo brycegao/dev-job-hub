@@ -163,6 +163,16 @@ button:focus-visible {
   padding: 18px;
 }
 
+.metric-card--clickable {
+  cursor: pointer;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.metric-card--clickable:hover {
+  border-color: #0f766e;
+  box-shadow: 0 1px 4px rgba(15, 118, 110, 0.1);
+}
+
 .metric-card span {
   color: #64748b;
 }
@@ -179,6 +189,37 @@ button:focus-visible {
 
 .wide {
   grid-column: span 2;
+}
+
+/* Dashboard 全宽和 2 列面板布局 */
+.dashboard-layout {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.dashboard-full {
+  grid-column: 1 / -1;
+}
+
+.dashboard-panels {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+@media (max-width: 980px) {
+  .dashboard-layout {
+    grid-template-columns: 1fr;
+  }
+  .dashboard-full {
+    grid-column: 1;
+  }
+  .dashboard-panels {
+    grid-column: 1;
+    grid-template-columns: 1fr;
+  }
 }
 
 .panel-header {
@@ -298,6 +339,7 @@ button:focus-visible {
   min-width: 300px;
 }
 
+.action-summary button,
 .action-summary span,
 .health-grid span {
   border: 1px solid #e5e7eb;
@@ -308,6 +350,23 @@ button:focus-visible {
   font-size: 12px;
   font-weight: 700;
   text-align: center;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.action-summary button:hover {
+  border-color: #0f766e;
+  background: #f0fdfa;
+}
+
+.action-summary button.action-summary-active {
+  border-color: #0f766e;
+  background: #0f766e;
+  color: #fff;
+}
+
+.action-summary button.action-summary-active strong {
+  color: #fff;
 }
 
 .action-summary strong,
@@ -353,6 +412,11 @@ button:focus-visible {
 
 .action-item--low {
   border-left-color: #64748b;
+}
+
+.action-item--dimmed {
+  opacity: 0.3;
+  pointer-events: none;
 }
 
 .action-badge {

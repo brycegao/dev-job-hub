@@ -1,6 +1,7 @@
+import { useRef, useState } from "react";
 import type { ApplicationMetrics, ChannelFunnel } from "../../features/analytics/services/applicationAnalytics";
 import type { DashboardAlert } from "../../features/analytics/services/insightsService";
-import type { TodayAction, TodayActionSummary } from "../../features/action-plan/services/todayActionService";
+import type { TodayAction, TodayActionPriority, TodayActionSummary } from "../../features/action-plan/services/todayActionService";
 import { interviewRoundLabels } from "../../features/interviews/types";
 import { MetricCard } from "../components/MetricCard";
 import { StatusBars } from "../components/StatusBars";
@@ -28,6 +29,7 @@ export function DashboardPage({
   alerts,
   onFollowUpClick,
   onLoadSample,
+  onNavigateToAnalytics,
 }: {
   metrics: ApplicationMetrics;
   channelFunnels: ChannelFunnel[];
@@ -36,13 +38,22 @@ export function DashboardPage({
   alerts: DashboardAlert[];
   onFollowUpClick: (applicationId: string) => void;
   onLoadSample: () => void;
+  onNavigateToAnalytics?: () => void;
 }) {
   const isEmpty = metrics.total === 0;
+  const actionListRef = useRef<HTMLDivElement>(null);
+  const [activeFilter, setActiveFilter] = useState<TodayActionPriority | null>(null);
+
+  function handlePriorityClick(priority: TodayActionPriority) {
+    setActiveFilter((prev) => prev === priority ? null : priority);
+    // 滚动到行动列表
+    actionListRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
 
   return (
-    <section className="page-grid">
+    <section className="dashboard-layout">
       {isEmpty && (
-        <section className="panel wide welcome-card">
+        <section className="panel dashboard-full welcome-card">
           <div className="welcome-icon">🚀</div>
           <h2>欢迎使用求职作战台</h2>
           <p className="welcome-desc">
@@ -62,7 +73,7 @@ export function DashboardPage({
 
       {!isEmpty && (
         <>
-          <section className="panel wide action-hero">
+          <section className="panel dashboard-full action-hero">
             <div>
               <p className="eyebrow">Today Action Desk</p>
               <h2>今日行动台</h2>
@@ -71,29 +82,38 @@ export function DashboardPage({
               </p>
             </div>
             <div className="action-summary">
-              <span>
+              <button
+                className={activeFilter === "high" ? "action-summary-active" : ""}
+                onClick={() => handlePriorityClick("high")}
+              >
                 <strong>{actionSummary.high}</strong>
                 优先处理
-              </span>
-              <span>
+              </button>
+              <button
+                className={activeFilter === "medium" ? "action-summary-active" : ""}
+                onClick={() => handlePriorityClick("medium")}
+              >
                 <strong>{actionSummary.medium}</strong>
                 今日推进
-              </span>
-              <span>
+              </button>
+              <button
+                className={activeFilter === "low" ? "action-summary-active" : ""}
+                onClick={() => handlePriorityClick("low")}
+              >
                 <strong>{actionSummary.low}</strong>
                 资料补全
-              </span>
+              </button>
             </div>
           </section>
 
-          <MetricCard label="总投递" value={metrics.total} />
-          <MetricCard label="本周投递" value={metrics.thisWeek} />
+          <MetricCard label="总投递" value={metrics.total} onClick={onNavigateToAnalytics} />
+          <MetricCard label="本周投递" value={metrics.thisWeek} onClick={onNavigateToAnalytics} />
         </>
       )}
 
       {/* 智能提醒 */}
       {alerts.length > 0 && (
-        <section className="panel wide">
+        <section className="panel dashboard-full">
           <div className="panel-header">
             <h2>💡 智能提醒</h2>
           </div>
@@ -115,12 +135,17 @@ export function DashboardPage({
         </section>
       )}
 
-      <section className="panel wide">
+      <section className="panel dashboard-full" ref={actionListRef}>
         <div className="panel-header">
           <div>
             <h2>今天先做什么</h2>
             <p>按紧急度聚合跟进、面试、复盘和资料补全任务。</p>
           </div>
+          {activeFilter && (
+            <button className="secondary-action" onClick={() => setActiveFilter(null)}>
+              显示全部
+            </button>
+          )}
         </div>
         {actions.length === 0 ? (
           <div className="empty-action-state">
@@ -129,10 +154,10 @@ export function DashboardPage({
           </div>
         ) : (
           <div className="action-list">
-            {actions.map((action) => (
+            {(activeFilter ? actions.filter((a) => a.priority === activeFilter) : actions).map((action) => (
               <button
                 key={action.id}
-                className={`action-item action-item--${action.priority}`}
+                className={`action-item action-item--${action.priority}${activeFilter && action.priority !== activeFilter ? " action-item--dimmed" : ""}`}
                 onClick={() => action.applicationId && onFollowUpClick(action.applicationId)}
               >
                 <span className="action-badge">{priorityLabels[action.priority]}</span>
@@ -150,7 +175,8 @@ export function DashboardPage({
         )}
       </section>
 
-      <section className="panel wide">
+      <div className="dashboard-panels">
+      <section className="panel">
         <div className="panel-header">
           <h2>最近需要跟进</h2>
         </div>
@@ -172,7 +198,7 @@ export function DashboardPage({
       </section>
 
       {!isEmpty && (
-        <section className="panel wide">
+        <section className="panel">
           <div className="panel-header">
             <div>
               <h2>求职健康度</h2>
@@ -202,7 +228,7 @@ export function DashboardPage({
       )}
 
       {channelFunnels.length > 0 && (
-        <section className="panel wide">
+        <section className="panel">
           <div className="panel-header">
             <h2>渠道转化漏斗</h2>
           </div>
@@ -254,7 +280,7 @@ export function DashboardPage({
         </section>
       )}
 
-      <section className="panel wide">
+      <section className="panel">
         <div className="panel-header">
           <h2>近 7 天待面试</h2>
         </div>
@@ -277,6 +303,7 @@ export function DashboardPage({
           </div>
         )}
       </section>
+      </div>
     </section>
   );
 }

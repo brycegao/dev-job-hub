@@ -206,6 +206,7 @@ export function App() {
             alerts={insights.dashboardAlerts}
             onFollowUpClick={handleFollowUpClick}
             onLoadSample={settings.handleLoadSampleData}
+            onNavigateToAnalytics={() => setPage("analytics")}
           />
         )}
 
