@@ -1,4 +1,5 @@
 import type { ApplicationMetrics, ChannelFunnel } from "../../features/analytics/services/applicationAnalytics";
+import type { DashboardAlert } from "../../features/analytics/services/insightsService";
 import type { TodayAction, TodayActionSummary } from "../../features/action-plan/services/todayActionService";
 import { interviewRoundLabels } from "../../features/interviews/types";
 import { MetricCard } from "../components/MetricCard";
@@ -24,6 +25,7 @@ export function DashboardPage({
   channelFunnels,
   actions,
   actionSummary,
+  alerts,
   onFollowUpClick,
   onLoadSample,
 }: {
@@ -31,6 +33,7 @@ export function DashboardPage({
   channelFunnels: ChannelFunnel[];
   actions: TodayAction[];
   actionSummary: TodayActionSummary;
+  alerts: DashboardAlert[];
   onFollowUpClick: (applicationId: string) => void;
   onLoadSample: () => void;
 }) {
@@ -86,6 +89,30 @@ export function DashboardPage({
           <MetricCard label="总投递" value={metrics.total} />
           <MetricCard label="本周投递" value={metrics.thisWeek} />
         </>
+      )}
+
+      {/* 智能提醒 */}
+      {alerts.length > 0 && (
+        <section className="panel wide">
+          <div className="panel-header">
+            <h2>💡 智能提醒</h2>
+          </div>
+          <div className="alert-list">
+            {alerts.map((alert) => (
+              <button
+                key={`${alert.type}-${alert.applicationId}`}
+                className={`alert-card alert-card--${alert.priority}`}
+                onClick={() => onFollowUpClick(alert.applicationId)}
+              >
+                <span className="alert-priority">
+                  {alert.priority === "high" ? "⚠️ 紧急" : "📌 建议"}
+                </span>
+                <span className="alert-message">{alert.message}</span>
+                <small className="alert-action">点击查看 →</small>
+              </button>
+            ))}
+          </div>
+        </section>
       )}
 
       <section className="panel wide">

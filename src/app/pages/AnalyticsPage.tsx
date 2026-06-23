@@ -1,4 +1,9 @@
 import type { ApplicationMetrics } from "../../features/analytics/services/applicationAnalytics";
+import type {
+  BottleneckInsight,
+  InsightsResult,
+  WeakPointPattern,
+} from "../../features/analytics/services/insightsService";
 import { MetricCard } from "../components/MetricCard";
 import { TextList } from "../components/TextList";
 import { formatPercent } from "../../shared/utils/common";
@@ -12,8 +17,10 @@ const FUNNEL_STEPS = [
 
 export function AnalyticsPage({
   metrics,
+  insights,
 }: {
   metrics: ApplicationMetrics;
+  insights: InsightsResult;
 }) {
   return (
     <section className="page-grid">
@@ -22,6 +29,20 @@ export function AnalyticsPage({
       <MetricCard label="回复到面试" value={formatPercent(metrics.interviewRate)} />
       <MetricCard label="本周投递" value={metrics.thisWeek} />
       <MetricCard label="Offer 数" value={metrics.offers} />
+
+      {/* 瓶颈提示 */}
+      {insights.bottlenecks.length > 0 && (
+        <section className="panel wide">
+          <div className="panel-header">
+            <h2>🔍 瓶颈提示</h2>
+          </div>
+          <div className="insights-list">
+            {insights.bottlenecks.map((bn) => (
+              <BottleneckCard key={bn.type} bottleneck={bn} />
+            ))}
+          </div>
+        </section>
+      )}
 
       <section className="panel wide">
         <div className="panel-header">
@@ -53,6 +74,21 @@ export function AnalyticsPage({
           })}
         </div>
       </section>
+
+      {/* 高频薄弱点 */}
+      {insights.weakPointPatterns.length > 0 && (
+        <section className="panel wide">
+          <div className="panel-header">
+            <h2>📊 高频薄弱点</h2>
+            <span className="muted">跨面试统计</span>
+          </div>
+          <div className="pattern-list">
+            {insights.weakPointPatterns.map((pattern) => (
+              <WeakPointPatternCard key={pattern.weakPoint} pattern={pattern} />
+            ))}
+          </div>
+        </section>
+      )}
 
       {metrics.followUps.length > 0 && (
         <section className="panel wide">
@@ -96,5 +132,35 @@ export function AnalyticsPage({
         </div>
       </section>
     </section>
+  );
+}
+
+/** 瓶颈提示卡片 */
+function BottleneckCard({ bottleneck }: { bottleneck: BottleneckInsight }) {
+  return (
+    <div className={`insight-card ${bottleneck.severity === "critical" ? "critical" : ""}`}>
+      <strong>{bottleneck.severity === "critical" ? "⚠️" : "💡"} {bottleneck.message}</strong>
+      <ol className="insight-suggestions">
+        {bottleneck.suggestions.map((s, i) => (
+          <li key={i}>{s}</li>
+        ))}
+      </ol>
+    </div>
+  );
+}
+
+/** 薄弱点模式卡片 */
+function WeakPointPatternCard({ pattern }: { pattern: WeakPointPattern }) {
+  return (
+    <div className="pattern-item">
+      <div className="pattern-header">
+        <strong>{pattern.weakPoint}</strong>
+        <span className="pattern-frequency">{pattern.frequency} 次</span>
+      </div>
+      <p className="pattern-companies">
+        相关面试：{pattern.relatedCompanies.join("、")}
+      </p>
+      <p className="pattern-suggestion">{pattern.suggestion}</p>
+    </div>
   );
 }

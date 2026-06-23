@@ -4,9 +4,34 @@
  */
 
 import { analyzeJD } from "../../jd-analysis/services/jdAnalysisService";
+import { keywordRules } from "../../jd-analysis/keyword-rules";
+import type { KeywordCategory } from "../../jd-analysis/types";
 import type { JobApplication } from "../../applications/types";
 import type { ResumeVersion } from "../../resumes/types";
 import type { MatchAction, ResumeMatchResult } from "../types";
+
+/** 关键词标签 → 类别查找表 */
+const keywordCategoryMap = new Map<string, KeywordCategory>(
+  keywordRules.map((rule) => [rule.label, rule.category]),
+);
+
+/** 按关键词类别生成差异化的缺口建议 */
+function buildGapAdvice(keyword: string, category: KeywordCategory): string {
+  switch (category) {
+    case "tech":
+      return `JD 要求「${keyword}」但你的简历未提及，建议在项目经验中补充：使用 ${keyword} 完成的具体任务、技术方案选型理由、最终效果（如性能提升 X%、耗时减少 Y）`;
+    case "capability":
+      return `JD 重点考察「${keyword}」但你的简历缺少相关描述，建议补充：你在 ${keyword} 方面的具体实践，如主导过什么方案、解决了什么问题、量化成果`;
+    case "domain":
+      return `JD 偏向「${keyword}」方向但你的简历未体现，如果你有相关经验，建议在自我评价或项目描述中强调`;
+    case "bonus":
+      return `JD 加分项「${keyword}」你有潜力提及，建议在简历中补充相关经验（如 i18n、支付集成等）`;
+    case "risk":
+      return `JD 风险项「${keyword}」可能成为面试门槛，建议提前准备应对策略并在面试中主动展示`;
+    default:
+      return `JD 要求「${keyword}」但你的简历未提及，建议准备 1 个相关案例或补充到简历`;
+  }
+}
 
 /** 文本统一为小写用于比较 */
 function normalize(text: string): string {
@@ -70,12 +95,13 @@ export function matchResumeToJD(
     }
   }
 
-  // gap：JD 要求但简历缺失
+  // gap：JD 要求但简历缺失（按类别生成差异化建议）
   for (const keyword of missingPoints) {
+    const category = keywordCategoryMap.get(keyword) ?? "tech";
     actions.push({
       type: "gap",
       keyword,
-      advice: `JD 要求「${keyword}」但你的简历未提及，建议准备 1 个相关案例或补充到简历`,
+      advice: buildGapAdvice(keyword, category),
     });
   }
 

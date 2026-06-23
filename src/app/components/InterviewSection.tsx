@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from "react";
 import type { AIProviderConfig } from "../../features/ai-assist/types";
+import { analyzeJD } from "../../features/jd-analysis/services/jdAnalysisService";
 import type { JobApplication } from "../../features/applications/types";
 import {
   interviewInviteStatusLabels,
@@ -56,6 +57,17 @@ export function InterviewSection({
   const [strengthsText, setStrengthsText] = useState("");
   const [actionItemsText, setActionItemsText] = useState("");
 
+  /** 从 JD 关键词中生成默认面试标签 */
+  function getDefaultTags(jdText: string): string {
+    if (!jdText.trim()) return "项目经历\n架构设计";
+    const analysis = analyzeJD(jdText);
+    const tags = [
+      ...analysis.capabilityKeywords.slice(0, 3),
+      ...analysis.techKeywords.slice(0, 2),
+    ];
+    return tags.length > 0 ? tags.join("\n") : "项目经历\n架构设计";
+  }
+
   function resetForm() {
     setRound("first");
     setInviteStatus("invited");
@@ -66,7 +78,7 @@ export function InterviewSection({
     setInterviewerType("");
     setInviteNotes("");
     setQuestionsText("");
-    setTagsText("项目经历\n架构设计");
+    setTagsText(getDefaultTags(application.jdText));
     setWeakPointsText("");
     setSelfReview("");
     setResult("pending");

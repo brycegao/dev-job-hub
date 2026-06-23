@@ -5,6 +5,7 @@ import {
   closedStatuses,
   statusLabels,
   statusPillClass,
+  statusTransitions,
   type JobApplication,
   type JobApplicationInput,
   type JobStatus,
@@ -136,7 +137,31 @@ export function ApplicationsPage({
                 className={selectedId === application.id ? "selected" : ""}
                 onClick={() => onSelectApplication(application.id)}
               >
-                <span className={`status-pill ${statusPillClass[application.status]}`}>{statusLabels[application.status]}</span>
+                <span
+                  className={`status-pill ${statusPillClass[application.status]}`}
+                  title={statusTransitions[application.status].length > 0
+                    ? `点击切换到「${statusLabels[statusTransitions[application.status][0]]}」`
+                    : undefined}
+                  role="button"
+                  tabIndex={0}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    const transitions = statusTransitions[application.status];
+                    if (transitions.length > 0) {
+                      onStatusChange(application, transitions[0]);
+                    }
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      const transitions = statusTransitions[application.status];
+                      if (transitions.length > 0) {
+                        onStatusChange(application, transitions[0]);
+                      }
+                    }
+                  }}
+                >{statusLabels[application.status]}</span>
                 <strong>{application.companyName}</strong>
                 <span>{application.jobTitle}</span>
                 <small>{application.channel} · {application.appliedAt || "未投递"}</small>

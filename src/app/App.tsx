@@ -5,6 +5,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { buildTodayActions } from "../features/action-plan/services/todayActionService";
 import { buildApplicationMetrics, computeChannelFunnels } from "../features/analytics/services/applicationAnalytics";
+import { buildInsights } from "../features/analytics/services/insightsService";
 import { getApplications } from "../features/applications/services/applicationService";
 import { getInterviews } from "../features/interviews/services/interviewService";
 import { getResumes } from "../features/resumes/services/resumeService";
@@ -122,6 +123,10 @@ export function App() {
     () => buildApplicationMetrics(appData.applications, interviewData.interviews),
     [appData.applications, interviewData.interviews],
   );
+  const insights = useMemo(
+    () => buildInsights(appData.applications, interviewData.interviews),
+    [appData.applications, interviewData.interviews],
+  );
   const todayActionPlan = useMemo(
     () => buildTodayActions(appData.applications, interviewData.interviews, resumeData.resumes),
     [appData.applications, interviewData.interviews, resumeData.resumes],
@@ -198,6 +203,7 @@ export function App() {
             channelFunnels={computeChannelFunnels(appData.applications)}
             actions={todayActionPlan.actions}
             actionSummary={todayActionPlan.summary}
+            alerts={insights.dashboardAlerts}
             onFollowUpClick={handleFollowUpClick}
             onLoadSample={settings.handleLoadSampleData}
           />
@@ -259,7 +265,7 @@ export function App() {
           />
         )}
 
-        {page === "analytics" && <AnalyticsPage metrics={metrics} />}
+        {page === "analytics" && <AnalyticsPage metrics={metrics} insights={insights} />}
 
         {page === "settings" && (
           <SettingsPage
