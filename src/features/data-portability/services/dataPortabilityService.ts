@@ -55,6 +55,21 @@ export function downloadJson(data: AppDataExport, filename: string): void {
 }
 
 /**
+ * 将文本下载为文件（用于 AI 上下文导出等场景）
+ * @param text - 要导出的文本内容
+ * @param filename - 下载文件名
+ */
+export function downloadText(text: string, filename: string): void {
+  const blob = new Blob([text], { type: "text/markdown;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const anchor = document.createElement("a");
+  anchor.href = url;
+  anchor.download = filename;
+  anchor.click();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+/**
  * 解析并校验导入的 JSON 文本
  * @param text - JSON 文本内容
  * @returns 校验通过的导入数据

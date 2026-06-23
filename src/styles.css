@@ -90,6 +90,21 @@ button:focus-visible {
   background: transparent;
   padding: 11px 12px;
   text-align: left;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.nav button kbd {
+  margin-left: auto;
+  padding: 1px 6px;
+  border: 1px solid #374151;
+  border-radius: 4px;
+  background: #1f2937;
+  color: #6b7280;
+  font-family: inherit;
+  font-size: 11px;
+  line-height: 1.4;
 }
 
 .nav button.active,

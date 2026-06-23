@@ -12,6 +12,7 @@ import { getResumes } from "../features/resumes/services/resumeService";
 import { navItems, type Page } from "./constants";
 import { useApplicationData } from "./hooks/useApplicationData";
 import { useInterviewData } from "./hooks/useInterviewData";
+import { useKeyboardShortcuts } from "./hooks/useKeyboardShortcuts";
 import { useResumeData } from "./hooks/useResumeData";
 import { useSettings } from "./hooks/useSettings";
 import { AnalyticsPage } from "./pages/AnalyticsPage";
@@ -22,6 +23,8 @@ import { InterviewsPage } from "./pages/InterviewsPage";
 import { ResumesPage } from "./pages/ResumesPage";
 import { SettingsPage } from "./pages/SettingsPage";
 import { InstallPrompt } from "./components/InstallPrompt";
+import { buildAIContextExport } from "../features/ai-assist/services/aiContextExportService";
+import { downloadText } from "../features/data-portability/services/dataPortabilityService";
 import {
   checkAndNotify,
   getNotificationPermission,
@@ -149,6 +152,23 @@ export function App() {
     resumeData.hideForm();
   }, [resumeData.hideForm]);
 
+  useKeyboardShortcuts({
+    page,
+    setPage,
+    showCreateForm: appData.showCreateForm,
+    cancelEdit: appData.hideForm,
+    cancelResumeEdit: resumeData.hideForm,
+  });
+
+  const handleExportAIContext = useCallback(() => {
+    const text = buildAIContextExport({
+      applications: appData.applications,
+      resumes: resumeData.resumes,
+      interviews: interviewData.interviews,
+    });
+    downloadText(text, `ai-context-${new Date().toISOString().slice(0, 10)}.md`);
+  }, [appData.applications, resumeData.resumes, interviewData.interviews]);
+
   return (
     <div className="app-shell">
       <aside className="sidebar" aria-label="侧边导航">
@@ -160,7 +180,7 @@ export function App() {
           </div>
         </div>
         <nav className="nav" aria-label="主导航">
-          {navItems.map((item) => (
+          {navItems.map((item, index) => (
             <button
               key={item.key}
               className={page === item.key ? "active" : ""}
@@ -168,6 +188,7 @@ export function App() {
               onClick={() => setPage(item.key)}
             >
               {item.label}
+              <kbd>{index + 1}</kbd>
             </button>
           ))}
         </nav>
@@ -284,6 +305,7 @@ export function App() {
             onClearAll={settings.handleClearAllData}
             aiConfig={settings.aiConfig}
             onAIConfigSave={settings.handleAIConfigSave}
+            onExportAIContext={handleExportAIContext}
           />
         )}
 

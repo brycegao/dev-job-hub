@@ -14,6 +14,7 @@ export function SettingsPage({
   onClearAll,
   aiConfig,
   onAIConfigSave,
+  onExportAIContext,
 }: {
   applicationsCount: number;
   resumesCount: number;
@@ -26,6 +27,7 @@ export function SettingsPage({
   onClearAll: () => void;
   aiConfig: AIProviderConfig;
   onAIConfigSave: (config: AIProviderConfig) => void;
+  onExportAIContext: () => void;
 }) {
   const [draftAIConfig, setDraftAIConfig] = useState<AIProviderConfig>(aiConfig);
   const [showAIHelp, setShowAIHelp] = useState(false);
@@ -85,6 +87,9 @@ export function SettingsPage({
         <div className="settings-actions">
           <button className="primary" onClick={onExport}>
             导出 JSON
+          </button>
+          <button className="secondary-action" onClick={onExportAIContext}>
+            🤖 导出 AI 上下文
           </button>
           <label className="file-action">
             导入 JSON
