@@ -127,6 +127,24 @@ export function ApplicationForm({
       <div className="panel-header">
         <h2>{isEditing ? "编辑岗位" : "新增岗位"}</h2>
       </div>
+
+      {/* JD 粘贴区 — 第一入口，自动提取字段 */}
+      <div className={`jd-paste-zone${input.jdText.trim() ? " has-content" : ""}`}>
+        <div className="jd-paste-label">
+          <span>📋 粘贴 JD 文本</span>
+          <small>自动提取公司、岗位、渠道、城市、薪资</small>
+        </div>
+        <textarea
+          className="jd-paste-textarea"
+          value={input.jdText}
+          onChange={(event) => onInputChange({ ...input, jdText: event.target.value })}
+          onPaste={handleJDPaste}
+          placeholder="在此粘贴招聘页面 JD 全文，系统会自动提取关键信息并填充下方表单字段"
+          rows={8}
+        />
+        {autoFillMessage && <div className="jd-paste-feedback">{autoFillMessage}</div>}
+      </div>
+
       <div className="form-grid">
         <label>
           公司
@@ -251,46 +269,6 @@ export function ApplicationForm({
           placeholder="https://..."
         />
       </label>
-      <label>
-        <span className="field-title-row">
-          <span>JD 原文</span>
-          {autoFillMessage && <small>{autoFillMessage}</small>}
-        </span>
-        <textarea
-          value={input.jdText}
-          onChange={(event) => onInputChange({ ...input, jdText: event.target.value })}
-          onPaste={handleJDPaste}
-          placeholder="粘贴岗位 JD，后续会用于关键词分析和简历匹配"
-          rows={5}
-        />
-      </label>
-      <button
-        type="button"
-        className="secondary"
-        style={{ marginBottom: 12 }}
-        onClick={() => {
-          if (!input.jdText.trim()) return;
-          const extracted = extractJDFields(input.jdText);
-          const patch: Partial<JobApplicationInput> = {};
-          const filled = new Set<string>();
-          if (extracted.companyName && !input.companyName) { patch.companyName = extracted.companyName; filled.add("companyName"); }
-          if (extracted.jobTitle && !input.jobTitle) { patch.jobTitle = extracted.jobTitle; filled.add("jobTitle"); }
-          if (extracted.channel) { patch.channel = normalizeChannel(extracted.channel); filled.add("channel"); }
-          if (extracted.jobUrl && !input.jobUrl) { patch.jobUrl = extracted.jobUrl; filled.add("jobUrl"); }
-          if (extracted.salaryRange && !input.salaryRange) { patch.salaryRange = extracted.salaryRange; filled.add("salaryRange"); }
-          if (extracted.city && !input.city) { patch.city = extracted.city; filled.add("city"); }
-          if (extracted.remoteType && input.remoteType !== extracted.remoteType) { patch.remoteType = extracted.remoteType; filled.add("remoteType"); }
-          if (Object.keys(patch).length > 0) {
-            onInputChange({ ...input, ...patch });
-            setAutoFilledFields(filled);
-            setAutoFillMessage(`已提取：${Array.from(filled).map((f) => autoFillLabels[f]).join("、")}`);
-            setTimeout(() => setAutoFilledFields(new Set()), 1500);
-            setTimeout(() => setAutoFillMessage(""), 4500);
-          }
-        }}
-      >
-        从 JD 提取字段
-      </button>
       <label>
         备注
         <textarea
