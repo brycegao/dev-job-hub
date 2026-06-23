@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { ApplicationMetrics, ChannelFunnel } from "../../features/analytics/services/applicationAnalytics";
 import type { DashboardAlert } from "../../features/analytics/services/insightsService";
 import type { TodayAction, TodayActionPriority, TodayActionSummary } from "../../features/action-plan/services/todayActionService";
@@ -43,6 +43,20 @@ export function DashboardPage({
   const isEmpty = metrics.total === 0;
   const actionListRef = useRef<HTMLDivElement>(null);
   const [activeFilter, setActiveFilter] = useState<TodayActionPriority | null>(null);
+  const prevEmpty = useRef(true);
+  const [showGuidance, setShowGuidance] = useState(false);
+
+  /** 首次从空状态变为非空时，显示 8 秒引导横幅 */
+  useEffect(() => {
+    if (prevEmpty.current && !isEmpty) {
+      setShowGuidance(true);
+      const timer = setTimeout(() => setShowGuidance(false), 8000);
+      return () => clearTimeout(timer);
+    }
+    prevEmpty.current = isEmpty;
+  }, [isEmpty]);
+
+
 
   function handlePriorityClick(priority: TodayActionPriority) {
     setActiveFilter((prev) => prev === priority ? null : priority);
@@ -52,21 +66,49 @@ export function DashboardPage({
 
   return (
     <section className="dashboard-layout">
+      {/* 首次加载示例数据后的引导横幅 */}
+      {showGuidance && (
+        <div className="guidance-banner">
+          <span>
+            ✅ 示例数据已加载！试试这些操作：
+            <strong>点击岗位状态标签一键切换</strong> →
+            <strong>查看今日行动台</strong> →
+            <strong>打开统计页看瓶颈分析</strong>
+          </span>
+          <button className="guidance-banner-close" onClick={() => setShowGuidance(false)} aria-label="关闭引导">×</button>
+        </div>
+      )}
+
       {isEmpty && (
-        <section className="panel dashboard-full welcome-card">
-          <div className="welcome-icon">🚀</div>
-          <h2>欢迎使用求职作战台</h2>
-          <p className="welcome-desc">
-            专为程序员打造的求职管理工具——记录岗位投递、分析 JD 关键词、匹配简历版本、
-            追踪面试流程并生成可复用的 AI Prompt，帮助你高效复盘、系统求职。
+        <section className="panel dashboard-full welcome-hero">
+          <h2 className="welcome-hero-title">程序员求职作战台</h2>
+          <p className="welcome-hero-tagline">
+            粘贴 JD，3 秒建档。追踪投递漏斗，AI 辅助面试准备。
           </p>
-          <div className="welcome-actions">
-            <button className="primary" onClick={onLoadSample}>
-              加载示例数据，快速体验
-            </button>
+          <div className="welcome-features">
+            {[
+              { icon: "📋", title: "粘贴 JD 自动建档", desc: "薪资、城市、渠道自动提取，少打 80% 字段" },
+              { icon: "📊", title: "渠道漏斗可视化", desc: "投递→回复→面试→Offer 转化率，一眼看出瓶颈" },
+              { icon: "🎯", title: "今日行动优先排序", desc: "跟进、面试、复盘、补资料，按紧急度聚合" },
+            ].map((f) => (
+              <div key={f.title} className="welcome-feature-card">
+                <div className="welcome-feature-icon">{f.icon}</div>
+                <div className="welcome-feature-title">{f.title}</div>
+                <div className="welcome-feature-desc">{f.desc}</div>
+              </div>
+            ))}
           </div>
-          <p className="welcome-tip">
-            或点击右上角「新增岗位」开始记录你的第一个投递。
+          <div className="welcome-cta">
+            <button className="primary" onClick={onLoadSample}>
+              🚀 一键加载示例数据，快速体验
+            </button>
+            <p className="welcome-cta-desc">
+              加载 3 个岗位 · 2 份简历 · 1 条面试 → 数据不离开浏览器
+            </p>
+          </div>
+          <div className="welcome-divider" />
+          <p className="welcome-alt">
+            或点击右上角「新增岗位」从头开始
           </p>
         </section>
       )}

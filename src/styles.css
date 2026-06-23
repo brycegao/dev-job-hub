@@ -220,6 +220,17 @@ button:focus-visible {
     grid-column: 1;
     grid-template-columns: 1fr;
   }
+  .welcome-features {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .welcome-hero,
+  .welcome-feature-card,
+  .guidance-banner {
+    animation: none;
+  }
 }
 
 .panel-header {
@@ -1420,40 +1431,136 @@ textarea {
   line-height: 1.7;
 }
 
-.welcome-card {
+/* ── Welcome Hero（空状态首屏） ── */
+.welcome-hero {
   text-align: center;
-  padding: 28px 24px;
+  padding: 40px 32px;
+  background: linear-gradient(135deg, #f0fdfa 0%, #f5f7fb 100%);
+  animation: welcome-fade-in 0.6s ease-out;
 }
 
-.welcome-icon {
-  font-size: 48px;
-  margin-bottom: 8px;
-}
-
-.welcome-card h2 {
-  margin: 0 0 10px;
+.welcome-hero-title {
+  margin: 0 0 12px;
   color: #111827;
-  font-size: 22px;
+  font-size: 26px;
+  font-weight: 800;
 }
 
-.welcome-desc {
-  margin: 0 auto 18px;
-  max-width: 520px;
+.welcome-hero-tagline {
+  margin: 0 auto;
+  max-width: 480px;
   color: #475569;
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+.welcome-features {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  margin-top: 32px;
+}
+
+.welcome-feature-card {
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 20px 16px;
+  background: #fff;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  animation: welcome-fade-in 0.6s ease-out both;
+}
+
+.welcome-feature-card:nth-child(1) { animation-delay: 0.1s; }
+.welcome-feature-card:nth-child(2) { animation-delay: 0.2s; }
+.welcome-feature-card:nth-child(3) { animation-delay: 0.3s; }
+
+.welcome-feature-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08);
+}
+
+.welcome-feature-icon {
+  font-size: 28px;
+}
+
+.welcome-feature-title {
+  margin-top: 8px;
+  font-weight: 700;
+  color: #111827;
   font-size: 14px;
-  line-height: 1.8;
 }
 
-.welcome-actions {
-  display: flex;
-  justify-content: center;
-  margin-bottom: 14px;
+.welcome-feature-desc {
+  margin-top: 6px;
+  color: #64748b;
+  font-size: 13px;
+  line-height: 1.6;
 }
 
-.welcome-tip {
+.welcome-cta {
+  margin-top: 32px;
+}
+
+.welcome-cta .primary {
+  padding: 14px 32px;
+  font-size: 16px;
+  border-radius: 10px;
+}
+
+.welcome-cta-desc {
+  margin: 10px 0 0;
+  color: #64748b;
+  font-size: 13px;
+}
+
+.welcome-divider {
+  width: 60px;
+  height: 1px;
+  background: #cbd5e1;
+  margin: 24px auto 16px;
+}
+
+.welcome-alt {
   margin: 0;
   color: #94a3b8;
   font-size: 13px;
+}
+
+@keyframes welcome-fade-in {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ── 引导横幅（加载示例数据后） ── */
+.guidance-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  grid-column: 1 / -1;
+  border-left: 4px solid #14b8a6;
+  border-radius: 8px;
+  background: #f0fdfa;
+  padding: 12px 18px;
+  color: #0f766e;
+  font-size: 14px;
+  line-height: 1.6;
+  animation: welcome-fade-in 0.4s ease-out;
+}
+
+.guidance-banner strong {
+  color: #115e59;
+}
+
+.guidance-banner-close {
+  flex-shrink: 0;
+  border: 0;
+  background: transparent;
+  color: #64748b;
+  font-size: 18px;
+  cursor: pointer;
+  padding: 0 0 0 8px;
+  line-height: 1;
 }
 
 .error-banner {
