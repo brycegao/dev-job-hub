@@ -123,7 +123,7 @@ export function DashboardPage({
         )}
       </section>
 
-      <section className="panel">
+      <section className="panel wide">
         <div className="panel-header">
           <h2>最近需要跟进</h2>
         </div>
@@ -145,7 +145,7 @@ export function DashboardPage({
       </section>
 
       {!isEmpty && (
-        <section className="panel">
+        <section className="panel wide">
           <div className="panel-header">
             <div>
               <h2>求职健康度</h2>
