@@ -187,7 +187,8 @@ export function App() {
               aria-current={page === item.key ? "page" : undefined}
               onClick={() => setPage(item.key)}
             >
-              {item.label}
+              <span className={`nav-icon nav-icon--${item.icon}`} aria-hidden="true" />
+              <span className="nav-label">{item.label}</span>
               <kbd>{index + 1}</kbd>
             </button>
           ))}

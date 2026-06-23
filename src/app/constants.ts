@@ -16,14 +16,14 @@ export type Page =
   | "help";
 
 /** 侧边栏导航项 */
-export const navItems: Array<{ key: Page; label: string }> = [
-  { key: "dashboard", label: "概览" },
-  { key: "applications", label: "岗位" },
-  { key: "resumes", label: "简历" },
-  { key: "interviews", label: "面试" },
-  { key: "analytics", label: "统计" },
-  { key: "settings", label: "设置" },
-  { key: "help", label: "帮助" },
+export const navItems: Array<{ key: Page; label: string; icon: string }> = [
+  { key: "dashboard", label: "求职概览", icon: "dashboard" },
+  { key: "applications", label: "岗位管理", icon: "briefcase" },
+  { key: "resumes", label: "简历版本", icon: "document" },
+  { key: "interviews", label: "面试记录", icon: "chat" },
+  { key: "analytics", label: "统计分析", icon: "chart" },
+  { key: "settings", label: "系统设置", icon: "settings" },
+  { key: "help", label: "使用帮助", icon: "help" },
 ];
 
 /** 岗位表单默认值：投递日期默认今天，跟进日期默认 7 天后 */
