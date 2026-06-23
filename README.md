@@ -2,6 +2,8 @@
 
 > Local-first job hunt dashboard for Chinese developers. Paste JD, track applications, resumes, interviews, and get actionable insights — all in one private workspace.
 
+![程序员求职作战台演示](./docs/assets/demo.gif)
+
 粘贴 JD，自动建档。追踪投递漏斗、简历版本、面试复盘，AI 辅助生成面试准备包。纯本地运行，数据不离开浏览器。
 
 ## Why
@@ -130,7 +132,9 @@ npm run preview   # 预览生产构建
 
 ## Recommended Demo Script
 
-> 一个 20-30 秒 GIF 比功能清单更容易让新用户理解项目价值。
+> 一个 20 秒 GIF 比功能清单更容易让新用户理解项目价值。
+
+![程序员求职作战台演示](./docs/assets/demo.gif)
 
 **建议演示路径（6 步）：**
 
@@ -143,7 +147,11 @@ npm run preview   # 预览生产构建
 | 5 | 打开岗位详情，关联简历 | 匹配建议（可直接讲/缺口/差异化） |
 | 6 | 统计页 | 瓶颈提示 + 高频薄弱点分析 |
 
-**录制建议：** 工具推荐 [macOS 录屏](https://support.apple.com/guide/mac-help/record-your-screen-mh26671/mac) 或 [LICEcap](https://www.cockos.com/licecap/)，输出为 GIF 嵌入 README。
+重新生成演示 GIF：
+
+```bash
+python3 scripts/generate_demo_gif.py
+```
 
 ## Documentation
 
@@ -154,7 +162,6 @@ npm run preview   # 预览生产构建
 - [development-slices.md](./development-slices.md): 开发切片与优先级
 - [CLAUDE.md](./CLAUDE.md): AI 辅助开发指南
 
-## License
 
 ## License
 
