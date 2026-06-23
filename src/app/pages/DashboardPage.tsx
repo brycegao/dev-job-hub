@@ -223,7 +223,13 @@ export function DashboardPage({
           <h2>最近需要跟进</h2>
         </div>
         {metrics.followUps.length === 0 ? (
-          <p className="empty">暂无跟进项。给重点岗位设置下次跟进日期后会显示在这里。</p>
+          <div className="inline-hint">
+            <div className="inline-hint-icon">📌</div>
+            <div className="inline-hint-body">
+              <div className="inline-hint-title">暂无跟进项</div>
+              <div className="inline-hint-desc">给重点岗位设置下次跟进日期后会显示在这里。</div>
+            </div>
+          </div>
         ) : (
           <div className="simple-list">
             {metrics.followUps.map((application) => (
@@ -327,7 +333,12 @@ export function DashboardPage({
           <h2>近 7 天待面试</h2>
         </div>
         {metrics.upcomingInterviews.length === 0 ? (
-          <p className="empty">暂无近 7 天的面试邀约。</p>
+          <div className="inline-hint">
+            <div className="inline-hint-icon">📅</div>
+            <div className="inline-hint-body">
+              <div className="inline-hint-title">暂无近 7 天的面试邀约</div>
+            </div>
+          </div>
         ) : (
           <div className="simple-list">
             {metrics.upcomingInterviews.map((item) => (

@@ -42,7 +42,14 @@ export function ResumesPage({
           </button>
         </div>
         {resumes.length === 0 ? (
-          <p className="empty">还没有简历版本。点击「新增简历」添加一个。</p>
+          <div className="inline-hint">
+            <div className="inline-hint-icon">📄</div>
+            <div className="inline-hint-body">
+              <span className="inline-hint-step">第 2 步</span>
+              <div className="inline-hint-title">创建简历版本</div>
+              <div className="inline-hint-desc">多简历版本可与不同岗位 JD 交叉匹配，找出简历差距。</div>
+            </div>
+          </div>
         ) : (
           <div className="application-list">
             {resumes.map((resume) => (
@@ -77,7 +84,13 @@ export function ResumesPage({
             onDelete={onDelete}
           />
         ) : (
-          <p className="empty">选择左侧简历查看详情，或点击「新增简历」创建。</p>
+          <div className="inline-hint">
+            <div className="inline-hint-icon">👆</div>
+            <div className="inline-hint-body">
+              <div className="inline-hint-title">选择左侧简历查看详情</div>
+              <div className="inline-hint-desc">查看核心卖点、简历正文，以及与 JD 的匹配分析。</div>
+            </div>
+          </div>
         )}
       </div>
     </section>

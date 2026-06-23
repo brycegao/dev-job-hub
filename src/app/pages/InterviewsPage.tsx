@@ -90,9 +90,18 @@ export function InterviewsPage({
         />
       </div>
       {displayedInterviews.length === 0 ? (
-        <p className="empty">
-          {searchText ? "没有匹配的结果。" : "还没有面试记录。进入岗位详情后可以添加一面、二面、HR 面等复盘。"}
-        </p>
+        searchText ? (
+          <p className="empty">没有匹配的结果。</p>
+        ) : (
+          <div className="inline-hint">
+            <div className="inline-hint-icon">🎙️</div>
+            <div className="inline-hint-body">
+              <span className="inline-hint-step">第 3 步</span>
+              <div className="inline-hint-title">记录面试复盘</div>
+              <div className="inline-hint-desc">进入「岗位」页选择目标岗位，添加一面、二面、HR 面等面试记录，结构化复盘。</div>
+            </div>
+          </div>
+        )
       ) : (
         <div className="interview-board">
           {displayedInterviews.map((interview) => {

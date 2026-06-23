@@ -126,9 +126,18 @@ export function ApplicationsPage({
         {isLoading ? (
           <p className="empty">加载中...</p>
         ) : displayedApplications.length === 0 ? (
-          <p className="empty">
-            {searchText ? "没有匹配的结果。" : "还没有岗位记录。先新增一个目标岗位。"}
-          </p>
+          searchText ? (
+            <p className="empty">没有匹配的结果。</p>
+          ) : (
+            <div className="inline-hint">
+              <div className="inline-hint-icon">📋</div>
+              <div className="inline-hint-body">
+                <span className="inline-hint-step">第 1 步</span>
+                <div className="inline-hint-title">添加你的第一个目标岗位</div>
+                <div className="inline-hint-desc">点击右上角「新增岗位」，粘贴招聘 JD —— 薪资、城市、渠道会自动提取。</div>
+              </div>
+            </div>
+          )
         ) : (
           <div className="application-list">
             {displayedApplications.map((application) => (
@@ -198,7 +207,13 @@ export function ApplicationsPage({
             onInterviewUpdate={onInterviewUpdate}
           />
         ) : (
-          <p className="empty">选择左侧岗位查看详情，或点击「新增岗位」创建。</p>
+          <div className="inline-hint">
+            <div className="inline-hint-icon">👆</div>
+            <div className="inline-hint-body">
+              <div className="inline-hint-title">选择左侧岗位查看详情</div>
+              <div className="inline-hint-desc">查看 JD 分析结果、关联简历版本、添加面试记录。</div>
+            </div>
+          </div>
         )}
       </div>
     </section>

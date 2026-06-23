@@ -24,6 +24,17 @@ export function AnalyticsPage({
 }) {
   return (
     <section className="page-grid">
+      {metrics.total === 0 && (
+        <section className="inline-hint" style={{ gridColumn: "1 / -1" }}>
+          <div className="inline-hint-icon">📊</div>
+          <div className="inline-hint-body">
+            <span className="inline-hint-step">第 4 步</span>
+            <div className="inline-hint-title">数据积累后查看统计</div>
+            <div className="inline-hint-desc">添加岗位和面试记录后，这里会显示投递漏斗、瓶颈分析和高频薄弱点。</div>
+          </div>
+        </section>
+      )}
+
       <MetricCard label="投递总数" value={metrics.total} />
       <MetricCard label="投递到回复" value={formatPercent(metrics.replyRate)} />
       <MetricCard label="回复到面试" value={formatPercent(metrics.interviewRate)} />
