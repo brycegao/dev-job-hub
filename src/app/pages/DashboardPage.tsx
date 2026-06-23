@@ -1,15 +1,34 @@
 import type { ApplicationMetrics } from "../../features/analytics/services/applicationAnalytics";
+import type { TodayAction, TodayActionSummary } from "../../features/action-plan/services/todayActionService";
 import { interviewRoundLabels } from "../../features/interviews/types";
 import { MetricCard } from "../components/MetricCard";
 import { StatusBars } from "../components/StatusBars";
 import { formatPercent, formatDate, formatDateTime } from "../../shared/utils/common";
 
+const priorityLabels: Record<TodayAction["priority"], string> = {
+  high: "优先",
+  medium: "今天",
+  low: "补全",
+};
+
+const categoryLabels: Record<TodayAction["category"], string> = {
+  follow_up: "跟进",
+  interview: "面试",
+  review: "复盘",
+  stale: "无反馈",
+  data_hygiene: "补资料",
+};
+
 export function DashboardPage({
   metrics,
+  actions,
+  actionSummary,
   onFollowUpClick,
   onLoadSample,
 }: {
   metrics: ApplicationMetrics;
+  actions: TodayAction[];
+  actionSummary: TodayActionSummary;
   onFollowUpClick: (applicationId: string) => void;
   onLoadSample: () => void;
 }) {
@@ -38,33 +57,64 @@ export function DashboardPage({
 
       {!isEmpty && (
         <>
+          <section className="panel wide action-hero">
+            <div>
+              <p className="eyebrow">Today Action Desk</p>
+              <h2>今日行动台</h2>
+              <p>
+                先处理高优先级任务，再补全会影响 AI 建议和求职复盘的数据。
+              </p>
+            </div>
+            <div className="action-summary">
+              <span>
+                <strong>{actionSummary.high}</strong>
+                优先处理
+              </span>
+              <span>
+                <strong>{actionSummary.medium}</strong>
+                今日推进
+              </span>
+              <span>
+                <strong>{actionSummary.low}</strong>
+                资料补全
+              </span>
+            </div>
+          </section>
+
           <MetricCard label="总投递" value={metrics.total} />
           <MetricCard label="本周投递" value={metrics.thisWeek} />
-          <MetricCard label="回复数" value={metrics.replies} />
-          <MetricCard label="面试数" value={metrics.interviews} />
-          <MetricCard label="Offer" value={metrics.offers} />
-          <MetricCard label="回复率" value={formatPercent(metrics.replyRate)} />
         </>
       )}
 
       <section className="panel wide">
         <div className="panel-header">
-          <h2>近 7 天待面试</h2>
+          <div>
+            <h2>今天先做什么</h2>
+            <p>按紧急度聚合跟进、面试、复盘和资料补全任务。</p>
+          </div>
         </div>
-        {metrics.upcomingInterviews.length === 0 ? (
-          <p className="empty">暂无近 7 天的面试邀约。</p>
+        {actions.length === 0 ? (
+          <div className="empty-action-state">
+            <strong>今天没有阻塞项</strong>
+            <p>可以继续新增岗位、粘贴 JD，或去统计页复盘渠道和简历版本效果。</p>
+          </div>
         ) : (
-          <div className="simple-list">
-            {metrics.upcomingInterviews.map((item) => (
+          <div className="action-list">
+            {actions.map((action) => (
               <button
-                key={item.interview.id}
-                onClick={() => onFollowUpClick(item.applicationId)}
+                key={action.id}
+                className={`action-item action-item--${action.priority}`}
+                onClick={() => action.applicationId && onFollowUpClick(action.applicationId)}
               >
-                <span>
-                  {item.companyName} · {item.jobTitle}
-                  <small> {interviewRoundLabels[item.interview.round]}</small>
+                <span className="action-badge">{priorityLabels[action.priority]}</span>
+                <span className="action-copy">
+                  <strong>{action.title}</strong>
+                  <small>{action.description}</small>
                 </span>
-                <strong>{formatDateTime(item.interview.scheduledAt)}</strong>
+                <span className="action-meta">
+                  <small>{categoryLabels[action.category]}</small>
+                  <strong>{action.dueLabel}</strong>
+                </span>
               </button>
             ))}
           </div>
@@ -95,11 +145,56 @@ export function DashboardPage({
       {!isEmpty && (
         <section className="panel">
           <div className="panel-header">
-            <h2>状态分布</h2>
+            <div>
+              <h2>求职健康度</h2>
+              <p>把统计当作复盘线索，不抢今天的行动优先级。</p>
+            </div>
+          </div>
+          <div className="health-grid">
+            <span>
+              <strong>{metrics.replies}</strong>
+              回复数
+            </span>
+            <span>
+              <strong>{metrics.interviews}</strong>
+              面试数
+            </span>
+            <span>
+              <strong>{metrics.offers}</strong>
+              Offer
+            </span>
+            <span>
+              <strong>{formatPercent(metrics.replyRate)}</strong>
+              回复率
+            </span>
           </div>
           <StatusBars metrics={metrics.statusCounts} />
         </section>
       )}
+
+      <section className="panel wide">
+        <div className="panel-header">
+          <h2>近 7 天待面试</h2>
+        </div>
+        {metrics.upcomingInterviews.length === 0 ? (
+          <p className="empty">暂无近 7 天的面试邀约。</p>
+        ) : (
+          <div className="simple-list">
+            {metrics.upcomingInterviews.map((item) => (
+              <button
+                key={item.interview.id}
+                onClick={() => onFollowUpClick(item.applicationId)}
+              >
+                <span>
+                  {item.companyName} · {item.jobTitle}
+                  <small> {interviewRoundLabels[item.interview.round]}</small>
+                </span>
+                <strong>{formatDateTime(item.interview.scheduledAt)}</strong>
+              </button>
+            ))}
+          </div>
+        )}
+      </section>
     </section>
   );
 }

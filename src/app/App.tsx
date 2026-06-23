@@ -3,6 +3,7 @@
  * 管理页面路由、全局数据加载和各子模块的状态协调。
  */
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { buildTodayActions } from "../features/action-plan/services/todayActionService";
 import { buildApplicationMetrics } from "../features/analytics/services/applicationAnalytics";
 import { getApplications } from "../features/applications/services/applicationService";
 import { getInterviews } from "../features/interviews/services/interviewService";
@@ -121,6 +122,10 @@ export function App() {
     () => buildApplicationMetrics(appData.applications, interviewData.interviews),
     [appData.applications, interviewData.interviews],
   );
+  const todayActionPlan = useMemo(
+    () => buildTodayActions(appData.applications, interviewData.interviews, resumeData.resumes),
+    [appData.applications, interviewData.interviews, resumeData.resumes],
+  );
 
   const handleFollowUpClick = useCallback((id: string) => {
     appData.setSelectedId(id);
@@ -190,6 +195,8 @@ export function App() {
         {page === "dashboard" && (
           <DashboardPage
             metrics={metrics}
+            actions={todayActionPlan.actions}
+            actionSummary={todayActionPlan.summary}
             onFollowUpClick={handleFollowUpClick}
             onLoadSample={settings.handleLoadSampleData}
           />
