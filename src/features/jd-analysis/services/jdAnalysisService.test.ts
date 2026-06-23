@@ -199,9 +199,53 @@ describe("extractJDFields", () => {
     expect(result.remoteType).toBe("remote");
   });
 
-  it("does not return remoteType for onsite JD", () => {
+  it("extracts onsite type for onsite JD", () => {
     const jd = "工作地点：上海\n薪资：20-35K\n需到岗办公";
     const result = extractJDFields(jd);
-    expect(result.remoteType).toBeUndefined();
+    expect(result.remoteType).toBe("onsite");
+  });
+
+  it("extracts company name and job title from labeled JD", () => {
+    const jd = `公司名称：星海科技
+职位名称：Flutter 高级开发工程师
+工作地点：上海
+薪资：25-35K`;
+    const result = extractJDFields(jd);
+
+    expect(result.companyName).toBe("星海科技");
+    expect(result.jobTitle).toBe("Flutter 高级开发工程师");
+  });
+
+  it("extracts company and title from common copied lines", () => {
+    const jd = `某出海工具团队
+Android / Flutter 客户端工程师
+25k-40k/月
+上海 · 混合办公`;
+    const result = extractJDFields(jd);
+
+    expect(result.companyName).toBe("某出海工具团队");
+    expect(result.jobTitle).toBe("Android / Flutter 客户端工程师");
+    expect(result.salaryRange).toBe("25-40K");
+    expect(result.city).toBe("上海");
+    expect(result.remoteType).toBe("hybrid");
+  });
+
+  it("extracts channel and job url", () => {
+    const jd = `来源：脉脉
+招聘岗位：移动端工程师
+https://maimai.cn/jobs/12345
+工作地点：北京`;
+    const result = extractJDFields(jd);
+
+    expect(result.channel).toBe("脉脉");
+    expect(result.jobUrl).toBe("https://maimai.cn/jobs/12345");
+    expect(result.jobTitle).toBe("移动端工程师");
+  });
+
+  it("detects known recruiting channels", () => {
+    expect(extractJDFields("BOSS直聘 Flutter 工程师").channel).toBe("BOSS直聘");
+    expect(extractJDFields("拉勾招聘 Android").channel).toBe("拉勾");
+    expect(extractJDFields("猎聘职位 iOS").channel).toBe("猎聘");
+    expect(extractJDFields("内推 Java 后端").channel).toBe("内推");
   });
 });

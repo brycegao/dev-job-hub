@@ -509,6 +509,20 @@ label {
   font-weight: 700;
 }
 
+.field-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.field-title-row small {
+  color: #0f766e;
+  font-size: 12px;
+  font-weight: 800;
+  text-align: right;
+}
+
 input,
 select,
 textarea {

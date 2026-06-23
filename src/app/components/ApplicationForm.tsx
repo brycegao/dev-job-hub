@@ -9,6 +9,16 @@ import {
   type RemoteType,
 } from "../../features/applications/types";
 
+const autoFillLabels: Record<string, string> = {
+  companyName: "公司",
+  jobTitle: "岗位",
+  channel: "渠道",
+  jobUrl: "链接",
+  city: "城市",
+  salaryRange: "薪资",
+  remoteType: "工作方式",
+};
+
 export function ApplicationForm({
   input,
   isEditing,
@@ -25,6 +35,7 @@ export function ApplicationForm({
   onCancel: () => void;
 }) {
   const [autoFilledFields, setAutoFilledFields] = useState<Set<string>>(new Set());
+  const [autoFillMessage, setAutoFillMessage] = useState("");
   const isPastingRef = useRef(false);
 
   function handleJDPaste(event: React.ClipboardEvent<HTMLTextAreaElement>) {
@@ -39,6 +50,22 @@ export function ApplicationForm({
       const patch: Partial<JobApplicationInput> = {};
       const filled = new Set<string>();
 
+      if (extracted.companyName && !input.companyName) {
+        patch.companyName = extracted.companyName;
+        filled.add("companyName");
+      }
+      if (extracted.jobTitle && !input.jobTitle) {
+        patch.jobTitle = extracted.jobTitle;
+        filled.add("jobTitle");
+      }
+      if (extracted.channel && input.channel !== extracted.channel) {
+        patch.channel = extracted.channel;
+        filled.add("channel");
+      }
+      if (extracted.jobUrl && !input.jobUrl) {
+        patch.jobUrl = extracted.jobUrl;
+        filled.add("jobUrl");
+      }
       if (extracted.salaryRange && !input.salaryRange) {
         patch.salaryRange = extracted.salaryRange;
         filled.add("salaryRange");
@@ -55,8 +82,12 @@ export function ApplicationForm({
       if (Object.keys(patch).length > 0) {
         onInputChange({ ...input, ...patch });
         setAutoFilledFields(filled);
+        setAutoFillMessage(
+          `已自动填充：${Array.from(filled).map((field) => autoFillLabels[field]).join("、")}`,
+        );
         // 1.5 秒后清除高亮
         setTimeout(() => setAutoFilledFields(new Set()), 1500);
+        setTimeout(() => setAutoFillMessage(""), 4500);
       }
 
       isPastingRef.current = false;
@@ -72,6 +103,7 @@ export function ApplicationForm({
         <label>
           公司
           <input
+            className={autoFilledFields.has("companyName") ? "auto-filled-highlight" : ""}
             value={input.companyName}
             onChange={(event) =>
               onInputChange({ ...input, companyName: event.target.value })
@@ -83,6 +115,7 @@ export function ApplicationForm({
         <label>
           岗位
           <input
+            className={autoFilledFields.has("jobTitle") ? "auto-filled-highlight" : ""}
             value={input.jobTitle}
             onChange={(event) =>
               onInputChange({ ...input, jobTitle: event.target.value })
@@ -94,6 +127,7 @@ export function ApplicationForm({
         <label>
           渠道
           <input
+            className={autoFilledFields.has("channel") ? "auto-filled-highlight" : ""}
             value={input.channel}
             onChange={(event) =>
               onInputChange({ ...input, channel: event.target.value })
@@ -183,13 +217,17 @@ export function ApplicationForm({
       <label>
         岗位链接
         <input
+          className={autoFilledFields.has("jobUrl") ? "auto-filled-highlight" : ""}
           value={input.jobUrl}
           onChange={(event) => onInputChange({ ...input, jobUrl: event.target.value })}
           placeholder="https://..."
         />
       </label>
       <label>
-        JD 原文
+        <span className="field-title-row">
+          <span>JD 原文</span>
+          {autoFillMessage && <small>{autoFillMessage}</small>}
+        </span>
         <textarea
           value={input.jdText}
           onChange={(event) => onInputChange({ ...input, jdText: event.target.value })}
