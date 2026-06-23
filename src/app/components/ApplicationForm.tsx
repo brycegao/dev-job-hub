@@ -1,4 +1,5 @@
-import { type FormEvent } from "react";
+import { useRef, useState, type FormEvent } from "react";
+import { extractJDFields } from "../../features/jd-analysis/services/jdAnalysisService";
 import {
   activeStatuses,
   remoteTypeLabels,
@@ -11,16 +12,57 @@ import {
 export function ApplicationForm({
   input,
   isEditing,
+  channelHistory,
   onInputChange,
   onSubmit,
   onCancel,
 }: {
   input: JobApplicationInput;
   isEditing: boolean;
+  channelHistory?: string[];
   onInputChange: (next: JobApplicationInput) => void;
   onSubmit: (event: FormEvent<HTMLFormElement>) => void;
   onCancel: () => void;
 }) {
+  const [autoFilledFields, setAutoFilledFields] = useState<Set<string>>(new Set());
+  const isPastingRef = useRef(false);
+
+  function handleJDPaste(event: React.ClipboardEvent<HTMLTextAreaElement>) {
+    const pastedText = event.clipboardData.getData("text");
+    if (!pastedText.trim()) return;
+
+    isPastingRef.current = true;
+
+    // 让 React 先处理默认粘贴行为设置 jdText，再用 setTimeout 填充其他字段
+    setTimeout(() => {
+      const extracted = extractJDFields(pastedText);
+      const patch: Partial<JobApplicationInput> = {};
+      const filled = new Set<string>();
+
+      if (extracted.salaryRange && !input.salaryRange) {
+        patch.salaryRange = extracted.salaryRange;
+        filled.add("salaryRange");
+      }
+      if (extracted.city && !input.city) {
+        patch.city = extracted.city;
+        filled.add("city");
+      }
+      if (extracted.remoteType && input.remoteType !== extracted.remoteType) {
+        patch.remoteType = extracted.remoteType;
+        filled.add("remoteType");
+      }
+
+      if (Object.keys(patch).length > 0) {
+        onInputChange({ ...input, ...patch });
+        setAutoFilledFields(filled);
+        // 1.5 秒后清除高亮
+        setTimeout(() => setAutoFilledFields(new Set()), 1500);
+      }
+
+      isPastingRef.current = false;
+    }, 0);
+  }
+
   return (
     <form className="panel form-panel" onSubmit={onSubmit}>
       <div className="panel-header">
@@ -56,7 +98,15 @@ export function ApplicationForm({
             onChange={(event) =>
               onInputChange({ ...input, channel: event.target.value })
             }
+            list="channel-history"
           />
+          {channelHistory && channelHistory.length > 0 && (
+            <datalist id="channel-history">
+              {channelHistory.map((ch) => (
+                <option key={ch} value={ch} />
+              ))}
+            </datalist>
+          )}
         </label>
         <label>
           状态
@@ -76,6 +126,7 @@ export function ApplicationForm({
         <label>
           城市
           <input
+            className={autoFilledFields.has("city") ? "auto-filled-highlight" : ""}
             value={input.city}
             onChange={(event) => onInputChange({ ...input, city: event.target.value })}
             placeholder="上海 / 北京 / 远程"
@@ -84,6 +135,7 @@ export function ApplicationForm({
         <label>
           薪资
           <input
+            className={autoFilledFields.has("salaryRange") ? "auto-filled-highlight" : ""}
             value={input.salaryRange}
             onChange={(event) =>
               onInputChange({ ...input, salaryRange: event.target.value })
@@ -94,6 +146,7 @@ export function ApplicationForm({
         <label>
           工作方式
           <select
+            className={autoFilledFields.has("remoteType") ? "auto-filled-highlight" : ""}
             value={input.remoteType}
             onChange={(event) =>
               onInputChange({ ...input, remoteType: event.target.value as RemoteType })
@@ -140,6 +193,7 @@ export function ApplicationForm({
         <textarea
           value={input.jdText}
           onChange={(event) => onInputChange({ ...input, jdText: event.target.value })}
+          onPaste={handleJDPaste}
           placeholder="粘贴岗位 JD，后续会用于关键词分析和简历匹配"
           rows={5}
         />

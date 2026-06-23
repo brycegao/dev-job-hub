@@ -18,7 +18,7 @@ import {
   type InterviewRecord,
 } from "../../features/interviews/types";
 import type { ResumeVersion } from "../../features/resumes/types";
-import { formatDate } from "../../shared/utils/common";
+import { formatDateTime } from "../../shared/utils/common";
 import { confirmDelete } from "../constants";
 import { useAiGenerate } from "../hooks/useAiGenerate";
 import { InviteUpdatePanel } from "./InviteUpdatePanel";
@@ -87,7 +87,9 @@ export function InterviewRecordCard({
       </div>
       <div className="detail-grid compact">
         <span>时间</span>
-        <strong>{formatDate(interview.scheduledAt)}</strong>
+        <strong>{formatDateTime(interview.scheduledAt)}</strong>
+        <span>地点</span>
+        <strong>{interview.location || "未填写"}</strong>
         <span>邀约</span>
         <strong>{interviewInviteStatusLabels[interview.inviteStatus ?? "not_scheduled"]}</strong>
         <span>面试官</span>
@@ -97,7 +99,7 @@ export function InterviewRecordCard({
         <span>下一轮</span>
         <strong>
           {interview.nextRound
-            ? `${interviewRoundLabels[interview.nextRound]} · ${interview.nextScheduledAt || "时间未定"}`
+            ? `${interviewRoundLabels[interview.nextRound]} · ${formatDateTime(interview.nextScheduledAt)}${interview.nextLocation ? ` · ${interview.nextLocation}` : ""}`
             : "未安排"}
         </strong>
       </div>

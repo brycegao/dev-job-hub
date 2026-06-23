@@ -119,10 +119,12 @@ export const sampleData: AppDataExport = {
       inviteStatus: "confirmed",
       invitedAt: datetimeOffset(-1),
       scheduledAt: datetimeOffset(1, 14, 0),
+      location: "腾讯会议 873-452-901",
       confirmedAt: datetimeOffset(-1),
       interviewerType: "技术负责人",
       nextRound: "second",
       nextScheduledAt: datetimeOffset(5, 14, 0),
+      nextLocation: "上海市徐汇区漕河泾办公区 12F",
       inviteNotes: "HR 通知一面通过，二面关注 Flutter 工程化和 Google Play 合规细节。",
       questions: [
         {

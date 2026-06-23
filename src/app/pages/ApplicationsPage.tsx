@@ -77,6 +77,11 @@ export function ApplicationsPage({
 }) {
   const [searchText, setSearchText] = useState("");
 
+  const channelHistory = useMemo(
+    () => Array.from(new Set(applications.map((a) => a.channel).filter(Boolean))),
+    [applications],
+  );
+
   const displayedApplications = useMemo(() => {
     if (!searchText.trim()) return filteredApplications;
     return filteredApplications.filter((app) => matchesSearch(app, searchText));
@@ -146,6 +151,7 @@ export function ApplicationsPage({
           <ApplicationForm
             input={input}
             isEditing={isEditing}
+            channelHistory={channelHistory}
             onInputChange={onInputChange}
             onSubmit={onSubmit}
             onCancel={onCancelEdit}

@@ -42,6 +42,7 @@ export function InterviewSection({
   const [inviteStatus, setInviteStatus] = useState<InterviewInviteStatus>("invited");
   const [invitedAt, setInvitedAt] = useState(new Date().toISOString().slice(0, 16));
   const [scheduledAt, setScheduledAt] = useState("");
+  const [location, setLocation] = useState("");
   const [confirmedAt, setConfirmedAt] = useState("");
   const [interviewerType, setInterviewerType] = useState("");
   const [inviteNotes, setInviteNotes] = useState("");
@@ -60,6 +61,7 @@ export function InterviewSection({
     setInviteStatus("invited");
     setInvitedAt(new Date().toISOString().slice(0, 16));
     setScheduledAt("");
+    setLocation("");
     setConfirmedAt("");
     setInterviewerType("");
     setInviteNotes("");
@@ -81,6 +83,7 @@ export function InterviewSection({
     setInviteStatus(interview.inviteStatus ?? "invited");
     setInvitedAt(interview.invitedAt || new Date().toISOString().slice(0, 16));
     setScheduledAt(interview.scheduledAt || "");
+    setLocation(interview.location || "");
     setConfirmedAt(interview.confirmedAt || "");
     setInterviewerType(interview.interviewerType || "");
     setInviteNotes(interview.inviteNotes || "");
@@ -126,6 +129,7 @@ export function InterviewSection({
         inviteStatus,
         invitedAt,
         scheduledAt,
+        location,
         confirmedAt,
         interviewerType,
         inviteNotes,
@@ -160,6 +164,7 @@ export function InterviewSection({
         inviteStatus,
         invitedAt,
         scheduledAt,
+        location,
         confirmedAt,
         interviewerType,
         inviteNotes,
@@ -250,6 +255,14 @@ export function InterviewSection({
               type="datetime-local"
               value={scheduledAt}
               onChange={(event) => setScheduledAt(event.target.value)}
+            />
+          </label>
+          <label>
+            面试地点
+            <input
+              value={location}
+              onChange={(event) => setLocation(event.target.value)}
+              placeholder="公司地址 / 腾讯会议链接 / Zoom 链接"
             />
           </label>
           <label>

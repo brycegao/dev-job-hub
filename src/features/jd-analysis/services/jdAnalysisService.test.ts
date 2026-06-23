@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { analyzeJD } from "./jdAnalysisService";
+import { analyzeJD, extractJDFields } from "./jdAnalysisService";
 
 describe("analyzeJD", () => {
   it("extracts tech keywords from a Chinese JD mentioning Flutter, Android, and Kotlin", () => {
@@ -117,5 +117,91 @@ describe("analyzeJD", () => {
 
     const result3 = analyzeJD("FLUTTER developer wanted");
     expect(result3.techKeywords).toContain("Flutter");
+  });
+});
+
+describe("extractJDFields", () => {
+  it("extracts salary range in K format", () => {
+    const jd = "薪资待遇：15-25K";
+    const result = extractJDFields(jd);
+    expect(result.salaryRange).toBe("15-25K");
+  });
+
+  it("extracts lowercase k salary", () => {
+    const jd = "15k-25k/月";
+    const result = extractJDFields(jd);
+    expect(result.salaryRange).toBe("15-25K");
+  });
+
+  it("extracts annual salary and converts to monthly K", () => {
+    const jd = "年薪20-40万";
+    const result = extractJDFields(jd);
+    expect(result.salaryRange).toBe("2-3K");
+  });
+
+  it("extracts numeric salary and converts to K", () => {
+    const jd = "月薪 15000-25000";
+    const result = extractJDFields(jd);
+    expect(result.salaryRange).toBe("15-25K");
+  });
+
+  it("extracts city from parentheses", () => {
+    const jd = "（上海）Flutter 开发工程师";
+    const result = extractJDFields(jd);
+    expect(result.city).toBe("上海");
+  });
+
+  it("extracts city from 工作地点 label", () => {
+    const jd = "工作地点：北京\n岗位要求 Flutter 开发经验";
+    const result = extractJDFields(jd);
+    expect(result.city).toBe("北京");
+  });
+
+  it("extracts city from line start", () => {
+    const jd = "深圳 · Flutter 高级开发\n熟悉 Dart 语言";
+    const result = extractJDFields(jd);
+    expect(result.city).toBe("深圳");
+  });
+
+  it("extracts remote type", () => {
+    const jd = "支持远程办公，每周到岗 2 天";
+    const result = extractJDFields(jd);
+    expect(result.remoteType).toBe("remote");
+  });
+
+  it("extracts hybrid type", () => {
+    const jd = "混合办公模式，灵活安排";
+    const result = extractJDFields(jd);
+    expect(result.remoteType).toBe("hybrid");
+  });
+
+  it("returns empty object for empty text", () => {
+    const result = extractJDFields("");
+    expect(result).toEqual({});
+  });
+
+  it("returns undefined for fields not found", () => {
+    const jd = "这是一个没有薪资和城市信息的 JD 描述";
+    const result = extractJDFields(jd);
+    expect(result.salaryRange).toBeUndefined();
+    expect(result.city).toBeUndefined();
+    expect(result.remoteType).toBeUndefined();
+  });
+
+  it("extracts all three fields from a realistic JD", () => {
+    const jd = `（杭州）高级 Flutter 开发工程师
+薪资范围：25-40K
+支持远程办公
+岗位要求：熟练使用 Flutter 和 Dart 进行跨端开发`;
+    const result = extractJDFields(jd);
+    expect(result.city).toBe("杭州");
+    expect(result.salaryRange).toBe("25-40K");
+    expect(result.remoteType).toBe("remote");
+  });
+
+  it("does not return remoteType for onsite JD", () => {
+    const jd = "工作地点：上海\n薪资：20-35K\n需到岗办公";
+    const result = extractJDFields(jd);
+    expect(result.remoteType).toBeUndefined();
   });
 });

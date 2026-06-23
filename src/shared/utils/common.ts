@@ -48,9 +48,11 @@ export function formatDateTime(isoString: string | undefined | null): string {
   const date = new Date(isoString);
   if (isNaN(date.getTime())) return isoString;
   return date.toLocaleString("zh-CN", {
-    month: "short",
-    day: "numeric",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
     hour: "2-digit",
     minute: "2-digit",
+    hour12: false,
   });
 }

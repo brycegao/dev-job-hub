@@ -1347,3 +1347,28 @@ textarea {
   color: #6b7280;
   max-width: 480px;
 }
+
+/* JD 粘贴自动填充高亮 */
+.auto-filled-highlight {
+  animation: auto-fill-pulse 1.5s ease;
+}
+
+@keyframes auto-fill-pulse {
+  0% {
+    box-shadow: 0 0 0 3px rgba(20, 184, 166, 0.4);
+  }
+  100% {
+    box-shadow: none;
+  }
+}
+
+/* 状态药丸可点击 */
+.application-list button .status-pill {
+  cursor: pointer;
+  transition: transform 0.1s, box-shadow 0.15s;
+}
+
+.application-list button .status-pill:hover {
+  transform: scale(1.08);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+}

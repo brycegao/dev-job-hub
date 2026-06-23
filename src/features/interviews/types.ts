@@ -38,10 +38,12 @@ export type InterviewRecord = {
   inviteStatus?: InterviewInviteStatus;
   invitedAt?: string;
   scheduledAt?: string;
+  location?: string;
   confirmedAt?: string;
   interviewerType?: string;
   nextRound?: InterviewRound;
   nextScheduledAt?: string;
+  nextLocation?: string;
   inviteNotes?: string;
   questions: InterviewQuestion[];
   selfReview?: string;

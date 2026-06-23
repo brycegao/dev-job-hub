@@ -63,6 +63,7 @@ const mockInterview: InterviewRecord = {
   round: "first",
   inviteStatus: "confirmed",
   scheduledAt: futureDate(1, 14, 30),
+  location: "腾讯会议 873-452-901",
   interviewerType: "技术负责人",
   inviteNotes: "HR 通知一面",
   questions: [],
@@ -108,13 +109,15 @@ describe("exportInterviewToCalendar", () => {
     restore();
   });
 
-  it("ICS 包含面试官类型和备注", () => {
+  it("ICS 包含面试官类型、地点和备注", () => {
     const { getBlob, restore } = captureBlob();
 
     exportInterviewToCalendar(mockInterview, mockApplication);
 
     const ics = getBlob();
     expect(ics).toContain("技术负责人");
+    expect(ics).toContain("LOCATION:");
+    expect(ics).toContain("腾讯会议 873-452-901");
     expect(ics).toContain("HR 通知一面");
     restore();
   });

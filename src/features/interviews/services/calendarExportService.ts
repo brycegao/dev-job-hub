@@ -58,6 +58,9 @@ function buildEventICS(options: ICSBuildOptions): string {
   if (interview.interviewerType) {
     descParts.push(`面试官：${interview.interviewerType}`);
   }
+  if (interview.location) {
+    descParts.push(`地点：${interview.location}`);
+  }
   if (interview.inviteNotes) {
     descParts.push(`备注：${interview.inviteNotes}`);
   }
@@ -72,10 +75,11 @@ function buildEventICS(options: ICSBuildOptions): string {
     `DTSTART:${dtStart}`,
     `DTEND:${dtEnd}`,
     `SUMMARY:${escapeICS(summary)}`,
+    interview.location ? `LOCATION:${escapeICS(interview.location)}` : "",
     `DESCRIPTION:${escapeICS(descParts.join("\\n"))}`,
     `X-WR-CALNAME:求职作战台`,
     "END:VEVENT",
-  ].join("\r\n");
+  ].filter(Boolean).join("\r\n");
 }
 
 /** 将多个 VEVENT 包装为完整的 ICS 日历字符串 */

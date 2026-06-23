@@ -21,19 +21,23 @@ export function InviteUpdatePanel({
     interview.inviteStatus ?? "not_scheduled",
   );
   const [scheduledAt, setScheduledAt] = useState(interview.scheduledAt ?? "");
+  const [location, setLocation] = useState(interview.location ?? "");
   const [confirmedAt, setConfirmedAt] = useState(interview.confirmedAt ?? "");
   const [nextRound, setNextRound] = useState<InterviewRound>(
     interview.nextRound ?? "second",
   );
   const [nextScheduledAt, setNextScheduledAt] = useState(interview.nextScheduledAt ?? "");
+  const [nextLocation, setNextLocation] = useState(interview.nextLocation ?? "");
   const [inviteNotes, setInviteNotes] = useState(interview.inviteNotes ?? "");
 
   useEffect(() => {
     setInviteStatus(interview.inviteStatus ?? "not_scheduled");
     setScheduledAt(interview.scheduledAt ?? "");
+    setLocation(interview.location ?? "");
     setConfirmedAt(interview.confirmedAt ?? "");
     setNextRound(interview.nextRound ?? "second");
     setNextScheduledAt(interview.nextScheduledAt ?? "");
+    setNextLocation(interview.nextLocation ?? "");
     setInviteNotes(interview.inviteNotes ?? "");
   }, [interview.id]);
 
@@ -42,9 +46,11 @@ export function InviteUpdatePanel({
       ...interview,
       inviteStatus,
       scheduledAt,
+      location,
       confirmedAt,
       nextRound,
       nextScheduledAt,
+      nextLocation,
       inviteNotes,
     };
     onUpdate(updated);
@@ -87,6 +93,14 @@ export function InviteUpdatePanel({
           />
         </label>
         <label>
+          本轮地点
+          <input
+            value={location}
+            onChange={(event) => setLocation(event.target.value)}
+            placeholder="公司地址 / 会议链接"
+          />
+        </label>
+        <label>
           确认时间
           <input
             type="datetime-local"
@@ -113,6 +127,14 @@ export function InviteUpdatePanel({
             type="datetime-local"
             value={nextScheduledAt}
             onChange={(event) => setNextScheduledAt(event.target.value)}
+          />
+        </label>
+        <label>
+          下一轮地点
+          <input
+            value={nextLocation}
+            onChange={(event) => setNextLocation(event.target.value)}
+            placeholder="公司地址 / 会议链接"
           />
         </label>
       </div>
