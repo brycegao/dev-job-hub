@@ -21,6 +21,7 @@ import { HelpPage } from "./pages/HelpPage";
 import { InterviewsPage } from "./pages/InterviewsPage";
 import { ResumesPage } from "./pages/ResumesPage";
 import { SettingsPage } from "./pages/SettingsPage";
+import { InstallPrompt } from "./components/InstallPrompt";
 import {
   checkAndNotify,
   getNotificationPermission,
@@ -196,6 +197,8 @@ export function App() {
             <button onClick={() => setErrorMessage("")} aria-label="关闭错误提示">×</button>
           </div>
         )}
+
+        <InstallPrompt />
 
         {page === "dashboard" && (
           <DashboardPage
