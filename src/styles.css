@@ -1091,6 +1091,31 @@ textarea {
   font-weight: 700;
 }
 
+/* 帮助页折叠区块 */
+.help-section-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  border: 0;
+  background: transparent;
+  padding: 0;
+  cursor: pointer;
+  text-align: left;
+}
+
+.help-section-toggle h2 {
+  margin: 0;
+}
+
+.toggle-icon {
+  font-size: 12px;
+  color: #94a3b8;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
 .help-steps {
   display: grid;
   gap: 12px;
